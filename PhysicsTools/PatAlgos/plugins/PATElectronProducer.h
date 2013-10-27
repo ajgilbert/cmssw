@@ -1,5 +1,5 @@
 //
-// $Id: PATElectronProducer.h,v 1.26 2012/03/29 16:43:55 tjkim Exp $
+// $Id: PATElectronProducer.h,v 1.26.2.2 2012/10/04 19:26:11 tjkim Exp $
 //
 
 #ifndef PhysicsTools_PatAlgos_PATElectronProducer_h
@@ -13,7 +13,7 @@
    a collection of objects of reco::GsfElectron.
 
   \author   Steven Lowette, James Lamb\
-  \version  $Id: PATElectronProducer.h,v 1.26 2012/03/29 16:43:55 tjkim Exp $
+  \version  $Id: PATElectronProducer.h,v 1.26.2.2 2012/10/04 19:26:11 tjkim Exp $
 */
 
 
@@ -37,9 +37,10 @@
 #include "PhysicsTools/PatAlgos/interface/PATUserDataHelper.h"
 
 #include "RecoEcal/EgammaCoreTools/interface/EcalClusterLazyTools.h"
-
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
+
+#include "Geometry/CaloTopology/interface/CaloSubdetectorTopology.h"
 
 #include <string>
 
@@ -70,9 +71,12 @@ namespace pat {
       bool          embedGsfElectronCore_;
       bool          embedGsfTrack_;
       bool          embedSuperCluster_;
+      bool          embedSeedCluster_;
       bool          embedTrack_;
       bool          addGenMatch_;
       bool          embedGenMatch_;
+      bool          embedRecHits_;
+      
       std::vector<edm::InputTag> genMatchSrc_;
 
       /// pflow specific
@@ -156,6 +160,7 @@ namespace pat {
       bool useUserData_;
       pat::PATUserDataHelper<pat::Electron>      userDataHelper_;
 
+      const CaloTopology * ecalTopology_;
 
   };
 

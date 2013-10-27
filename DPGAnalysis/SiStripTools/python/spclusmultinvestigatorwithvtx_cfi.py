@@ -27,7 +27,8 @@ spclusmultinvestigatorwithvtx = cms.EDAnalyzer('MultiplicityInvestigator',
                                                hitName = cms.untracked.string("cluster"),
                                                multiplicityMap = cms.InputTag("spclustermultprod"),
                                                numberOfBins = cms.untracked.int32(500),
-                                               orbitNbin = cms.untracked.int32(1800),
+                                               maxLSBeforeRebin = cms.untracked.uint32(100),
+                                               startingLSFraction = cms.untracked.uint32(4),
                                                scaleFactor = cms.untracked.int32(100)
                                                )
 

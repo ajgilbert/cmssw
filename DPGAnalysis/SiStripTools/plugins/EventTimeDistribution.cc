@@ -22,6 +22,7 @@
 
 // user include files
 #include <string>
+#include <vector>
 
 #include "TH1F.h"
 #include "TH2F.h"
@@ -73,11 +74,17 @@ class EventTimeDistribution : public edm::EDAnalyzer {
   const bool _wantbxincyclevsbx;
   const bool _wantorbitvsbxincycle;
   unsigned int _nevents;
-  const double _binsize;
+  const unsigned int m_maxLS;
+  const unsigned int m_LSfrac;
+  const bool m_ewhdepthHisto;
+
+  
 
   RunHistogramManager _rhm;
 
   TH1F** _dbx;
+  std::vector<TH1F**> m_dbxhistos;
+  std::vector<std::pair<unsigned int,unsigned int> > m_dbxindices;
   TH1F** _bx;
   TH1F** _bxincycle;
   TH1F** _orbit;
@@ -85,6 +92,7 @@ class EventTimeDistribution : public edm::EDAnalyzer {
   TH2F** _dbxvsbx;
   TH2F** _bxincyclevsbx;
   TH2F** _orbitvsbxincycle;
+  TH1F** m_ewhdepth;
 
 };
 
@@ -108,20 +116,39 @@ EventTimeDistribution::EventTimeDistribution(const edm::ParameterSet& iConfig):
   _wantbxincyclevsbx(iConfig.getUntrackedParameter<bool>("wantBXincyclevsBX",false)),
   _wantorbitvsbxincycle(iConfig.getUntrackedParameter<bool>("wantOrbitvsBXincycle",false)),
   _nevents(0),
-  _binsize(iConfig.getUntrackedParameter<double>("minBinSizeInSec",1.)),
+  m_maxLS(iConfig.getUntrackedParameter<unsigned int>("maxLSBeforeRebin",100)),
+  m_LSfrac(iConfig.getUntrackedParameter<unsigned int>("startingLSFraction",4)),
+  m_ewhdepthHisto(iConfig.getUntrackedParameter<bool>("wantEWHDepthHisto",false)),
   _rhm(),
-  _dbxvsbxincycle(0),   _dbxvsbx(0),   _bxincyclevsbx(0),   _orbitvsbxincycle(0)
+  _dbxvsbxincycle(0),   _dbxvsbx(0),   _bxincyclevsbx(0),   _orbitvsbxincycle(0), m_ewhdepth(0)
 {
    //now do what ever initialization is needed
+
+  std::vector<edm::ParameterSet> dbxhistoparams(iConfig.getUntrackedParameter<std::vector<edm::ParameterSet> >("dbxHistosParams",std::vector<edm::ParameterSet>()));
+
+  for(std::vector<edm::ParameterSet>::const_iterator params=dbxhistoparams.begin();params!=dbxhistoparams.end();++params) {
+    m_dbxindices.push_back(std::pair<unsigned int,unsigned int>(params->getParameter<unsigned int>("firstEvent"),params->getParameter<unsigned int>("secondEvent")));
+    char hname[300];
+    sprintf(hname,"dbx_%d_%d",params->getParameter<unsigned int>("firstEvent"),params->getParameter<unsigned int>("secondEvent"));
+    char htitle[300];
+    sprintf(htitle,"dbx(%d,%d)",params->getParameter<unsigned int>("firstEvent"),params->getParameter<unsigned int>("secondEvent"));
+
+    m_dbxhistos.push_back(_rhm.makeTH1F(hname,htitle,params->getParameter<int>("nbins"),params->getParameter<double>("min"),
+					params->getParameter<double>("max")));
+    LogDebug("DBXHistoPreBooking") << "Booked DBX histo named " << hname << " untitled " << htitle;
+  }
+
+
 
   _dbx = _rhm.makeTH1F("dbx","dbx",1000,-0.5,999.5);
   _bx = _rhm.makeTH1F("bx","BX number",3564,-0.5,3563.5);
   _bxincycle = _rhm.makeTH1F("bxcycle","bxcycle",70,-0.5,69.5);
-  _orbit = _rhm.makeTH1F("orbit","orbit",3600,0,11223*_binsize*3600);
+  _orbit = _rhm.makeTH1F("orbit","orbit",m_LSfrac*m_maxLS,0,m_maxLS*262144);
   if(_wantdbxvsbxincycle) _dbxvsbxincycle = _rhm.makeTH2F("dbxvsbxincycle","dbxvsbxincycle",70,-0.5,69.5,1000,-0.5,999.5);
   if(_wantdbxvsbx) _dbxvsbx = _rhm.makeTH2F("dbxvsbx","dbxvsbx",3564,-0.5,3563.5,1000,-0.5,999.5);
   if(_wantbxincyclevsbx) _bxincyclevsbx = _rhm.makeTH2F("bxincyclevsbx","bxincyclevsbx",3564,-0.5,3563.5,70,-0.5,69.5);
-  if(_wantorbitvsbxincycle) _orbitvsbxincycle = _rhm.makeTH2F("orbitvsbxincycle","orbitvsbxincycle",70,-0.5,69.5,3600,0,11223*_binsize*3600);
+  if(_wantorbitvsbxincycle) _orbitvsbxincycle = _rhm.makeTH2F("orbitvsbxincycle","orbitvsbxincycle",70,-0.5,69.5,m_maxLS,0,m_maxLS*262144);
+  if(m_ewhdepthHisto) m_ewhdepth = _rhm.makeTH1F("ewhdepth","EventWithHistory Depth",11,-0.5,10.5);
 
   edm::LogInfo("UsedAPVCyclePhaseCollection") << " APVCyclePhaseCollection " << _apvphasecoll << " used";
 
@@ -152,6 +179,19 @@ EventTimeDistribution::analyze(const edm::Event& iEvent, const edm::EventSetup& 
    edm::Handle<EventWithHistory> he;
    iEvent.getByLabel(_historyProduct,he);
 
+   // improve the matchin between default and actual partitions
+   
+   (*_dbx)->Fill(he->deltaBX());
+   std::vector<std::pair<unsigned int,unsigned int> >::const_iterator indices=m_dbxindices.begin();
+   for(std::vector<TH1F**>::const_iterator dbxhist=m_dbxhistos.begin();dbxhist!=m_dbxhistos.end();++dbxhist,++indices) {
+     (*(*dbxhist))->Fill(he->deltaBX(indices->first,indices->second));
+   }
+
+   (*_bx)->Fill(iEvent.bunchCrossing());
+   (*_orbit)->Fill(iEvent.orbitNumber());
+   if(_dbxvsbx && *_dbxvsbx) (*_dbxvsbx)->Fill(iEvent.bunchCrossing(),he->deltaBX());
+   if(m_ewhdepth && *m_ewhdepth) (*m_ewhdepth)->Fill(he->depth());
+
    edm::Handle<APVCyclePhaseCollection> apvphase;
    iEvent.getByLabel(_apvphasecoll,apvphase);
 
@@ -160,24 +200,19 @@ EventTimeDistribution::analyze(const edm::Event& iEvent, const edm::EventSetup& 
      const int thephase = apvphase->getPhase(_phasepart); 
      if(thephase!=APVCyclePhaseCollection::invalid &&
 	thephase!=APVCyclePhaseCollection::multiphase &&
-	thephase!=APVCyclePhaseCollection::nopartition)
+	thephase!=APVCyclePhaseCollection::nopartition) {
+
        tbx -= thephase;
+       (*_bxincycle)->Fill(tbx%70);
+       if(_dbxvsbxincycle && *_dbxvsbxincycle) (*_dbxvsbxincycle)->Fill(tbx%70,he->deltaBX());
+       if(_bxincyclevsbx && *_bxincyclevsbx) (*_bxincyclevsbx)->Fill(iEvent.bunchCrossing(),tbx%70);
+       if(_orbitvsbxincycle && *_orbitvsbxincycle) (*_orbitvsbxincycle)->Fill(tbx%70,iEvent.orbitNumber());
+
+     }
+     else {
+       LogDebug("InvalidPhase") << "Invalid APVCyclePhase value : " << _phasepart << " " << thephase;
+     }
    }
-
-
-
-   // improve the matchin between default and actual partitions
-   
-   (*_dbx)->Fill(he->deltaBX());
-   (*_bx)->Fill(iEvent.bunchCrossing());
-   (*_bxincycle)->Fill(tbx%70);
-   (*_orbit)->Fill(iEvent.orbitNumber());
-   if(_dbxvsbxincycle && *_dbxvsbxincycle) (*_dbxvsbxincycle)->Fill(tbx%70,he->deltaBX());
-   if(_dbxvsbx && *_dbxvsbx) (*_dbxvsbx)->Fill(iEvent.bunchCrossing(),he->deltaBX());
-   if(_bxincyclevsbx && *_bxincyclevsbx) (*_bxincyclevsbx)->Fill(iEvent.bunchCrossing(),tbx%70);
-   if(_orbitvsbxincycle && *_orbitvsbxincycle) (*_orbitvsbxincycle)->Fill(tbx%70,iEvent.orbitNumber());
-
-
 }
 
 void 
@@ -185,7 +220,15 @@ EventTimeDistribution::beginRun(const edm::Run& iRun, const edm::EventSetup&)
 {
 
   _rhm.beginRun(iRun);
+
   if(*_dbx) {    (*_dbx)->GetXaxis()->SetTitle("#DeltaBX"); }
+
+  LogDebug("NomberOfHistos") << m_dbxhistos.size();
+  for(std::vector<TH1F**>::const_iterator dbxhist=m_dbxhistos.begin();dbxhist!=m_dbxhistos.end();++dbxhist) {
+    LogDebug("HistoPointer") << *dbxhist;
+    if(*(*dbxhist)) { (*(*dbxhist))->GetXaxis()->SetTitle("#DeltaBX"); }
+  }
+  LogDebug("LabelDone") << "all labels set";
 
   if(*_bx) { (*_bx)->GetXaxis()->SetTitle("BX");  }
 
@@ -195,6 +238,8 @@ EventTimeDistribution::beginRun(const edm::Run& iRun, const edm::EventSetup&)
     (*_orbit)->SetBit(TH1::kCanRebin);
     (*_orbit)->GetXaxis()->SetTitle("time [Orb#]"); 
   }
+
+  LogDebug("StdPlotsDone") << "all labels in std plots set";
 
   if(_dbxvsbxincycle && *_dbxvsbxincycle) {
     (*_dbxvsbxincycle)->GetXaxis()->SetTitle("Event BX mod(70)"); (*_dbxvsbxincycle)->GetYaxis()->SetTitle("#DeltaBX"); 
@@ -210,6 +255,11 @@ EventTimeDistribution::beginRun(const edm::Run& iRun, const edm::EventSetup&)
     (*_orbitvsbxincycle)->SetBit(TH1::kCanRebin);
     (*_orbitvsbxincycle)->GetXaxis()->SetTitle("Event BX mod(70)"); (*_orbitvsbxincycle)->GetYaxis()->SetTitle("time [Orb#]"); 
   }
+
+  if(m_ewhdepth && *m_ewhdepth) {
+    (*m_ewhdepth)->GetXaxis()->SetTitle("Depth");
+  }
+
 }
 
 void 
