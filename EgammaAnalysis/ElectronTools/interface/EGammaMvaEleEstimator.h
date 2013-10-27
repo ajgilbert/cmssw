@@ -35,6 +35,8 @@
 #include "TMVA/Tools.h"
 #include "TMVA/Reader.h"
 
+namespace EgammaAnalysis_ElectronTools {
+
 class EGammaMvaEleEstimator{
   public:
     EGammaMvaEleEstimator();
@@ -289,5 +291,7 @@ class EGammaMvaEleEstimator{
     Float_t                    fMVAVar_NeutralHadronIso_DR0p4To0p5;
  
 };
+
+}
 
 #endif

@@ -23,10 +23,11 @@
 
 using namespace std;
 using namespace reco;
-class ElectronIdMVAProducer : public edm::EDFilter {
+
+class NewElectronIdMVAProducer : public edm::EDFilter {
 	public:
-		explicit ElectronIdMVAProducer(const edm::ParameterSet&);
-		~ElectronIdMVAProducer();
+		explicit NewElectronIdMVAProducer(const edm::ParameterSet&);
+		~NewElectronIdMVAProducer();
 
 	private:
 		virtual bool filter(edm::Event&, const edm::EventSetup&);
@@ -44,7 +45,7 @@ class ElectronIdMVAProducer : public edm::EDFilter {
                 bool Trig_;
                 bool NoIP_;
  
-                EGammaMvaEleEstimator* mvaID_;
+                EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator* mvaID_;
 
 };
 
@@ -59,7 +60,7 @@ class ElectronIdMVAProducer : public edm::EDFilter {
 //
 // constructors and destructor
 //
-ElectronIdMVAProducer::ElectronIdMVAProducer(const edm::ParameterSet& iConfig) {
+NewElectronIdMVAProducer::NewElectronIdMVAProducer(const edm::ParameterSet& iConfig) {
         verbose_ = iConfig.getUntrackedParameter<bool>("verbose", false);
 	vertexTag_ = iConfig.getParameter<edm::InputTag>("vertexTag");
 	electronTag_ = iConfig.getParameter<edm::InputTag>("electronTag");
@@ -72,14 +73,14 @@ ElectronIdMVAProducer::ElectronIdMVAProducer(const edm::ParameterSet& iConfig) {
 
         produces<edm::ValueMap<float> >("");
 
-        mvaID_ = new EGammaMvaEleEstimator();
+        mvaID_ = new EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator();
  
-        EGammaMvaEleEstimator::MVAType type_;
-        if(Trig_ && !NoIP_){type_ = EGammaMvaEleEstimator::kTrig;}
+        EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator::MVAType type_;
+        if(Trig_ && !NoIP_){type_ = EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator::kTrig;}
 	 
-	if(Trig_ && NoIP_){type_ = EGammaMvaEleEstimator::kTrigNoIP;}
+	if(Trig_ && NoIP_){type_ = EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator::kTrigNoIP;}
 	 
-	if(!Trig_){type_ = EGammaMvaEleEstimator::kNonTrig;}
+	if(!Trig_){type_ = EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator::kNonTrig;}
 
         bool manualCat_ = true;
 
@@ -88,13 +89,12 @@ ElectronIdMVAProducer::ElectronIdMVAProducer(const edm::ParameterSet& iConfig) {
 	  path_mvaWeightFileEleID = edm::FileInPath ( fpMvaWeightFiles[ifile].c_str() ).fullPath();
 	  mvaWeightFiles_.push_back(path_mvaWeightFileEleID);
 	}
-	
         mvaID_->initialize(method_, type_, manualCat_, mvaWeightFiles_);
 
 }
 
 
-ElectronIdMVAProducer::~ElectronIdMVAProducer()
+NewElectronIdMVAProducer::~NewElectronIdMVAProducer()
 {
  
    // do anything here that needs to be done at desctruction time
@@ -108,7 +108,7 @@ ElectronIdMVAProducer::~ElectronIdMVAProducer()
 //
 
 // ------------ method called on each new Event  ------------
-bool ElectronIdMVAProducer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+bool NewElectronIdMVAProducer::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	using namespace edm;
 
         std::auto_ptr<edm::ValueMap<float> > out(new edm::ValueMap<float>() );
@@ -170,5 +170,6 @@ bool ElectronIdMVAProducer::filter(edm::Event& iEvent, const edm::EventSetup& iS
 	return true;
 }
 
+
 //define this as a plug-in
-DEFINE_FWK_MODULE(ElectronIdMVAProducer);
+DEFINE_FWK_MODULE(NewElectronIdMVAProducer);

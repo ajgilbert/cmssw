@@ -23,6 +23,9 @@ using namespace std;
 using namespace reco;
 #endif
 
+
+namespace EgammaAnalysis_ElectronTools {
+
 //--------------------------------------------------------------------------------------------------
 EGammaMvaEleEstimator::EGammaMvaEleEstimator() :
 fMethodname("BDTG method"),
@@ -47,7 +50,6 @@ void EGammaMvaEleEstimator::initialize( std::string methodName,
                                        std::string weightsfile,
                                        EGammaMvaEleEstimator::MVAType type)
 {
-  
   std::vector<std::string> tempWeightFileVector;
   tempWeightFileVector.push_back(weightsfile);
   initialize(methodName,type,kFALSE,tempWeightFileVector);
@@ -1803,6 +1805,8 @@ void EGammaMvaEleEstimator::bindVariables() {
   
   
   return;
+}
+
 }
 
 

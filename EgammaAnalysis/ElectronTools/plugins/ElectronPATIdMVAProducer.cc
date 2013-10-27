@@ -40,7 +40,7 @@ class ElectronPATIdMVAProducer : public edm::EDProducer {
   vector<string> mvaWeightFiles_;
   
   
-  EGammaMvaEleEstimator* mvaID_;
+  EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator* mvaID_;
 
 };
 
@@ -64,12 +64,12 @@ ElectronPATIdMVAProducer::ElectronPATIdMVAProducer(const edm::ParameterSet& iCon
 
         produces<edm::ValueMap<float> >();
 
-        mvaID_ = new EGammaMvaEleEstimator();
+        mvaID_ = new EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator();
  
-        EGammaMvaEleEstimator::MVAType type_;
+        EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator::MVAType type_;
         
 	 
-	type_ = EGammaMvaEleEstimator::kTrigNoIP;
+	type_ = EgammaAnalysis_ElectronTools::EGammaMvaEleEstimator::kTrigNoIP;
 	 
 	
 
