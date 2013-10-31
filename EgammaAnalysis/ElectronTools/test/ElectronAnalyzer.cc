@@ -66,6 +66,8 @@
 using namespace edm;
 using namespace reco;
 using namespace std;
+using namespace EgammaAnalysis_ElectronTools;
+
 class ElectronAnalyzer : public edm::EDAnalyzer {
    public:
       explicit ElectronAnalyzer(const edm::ParameterSet&);
