@@ -1,0 +1,3 @@
+[submodule "EgammaAnalysis/ElectronTools"]
+	path = EgammaAnalysis/ElectronTools
+	url = https://github.com/cms-analysis/EgammaAnalysis-ElectronTools.git
