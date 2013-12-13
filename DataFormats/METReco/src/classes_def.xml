@@ -130,7 +130,7 @@
   <class name="reco::HcalNoiseRBXCollection"/>
   <class name="edm::Wrapper<reco::HcalNoiseRBXCollection>"/>
 
-  <class name="HcalNoiseSummary" ClassVersion="14">
+  <class name="HcalNoiseSummary" ClassVersion="11">
    <version ClassVersion="11" checksum="664452001"/>
    <version ClassVersion="12" checksum="4280559065"/>
    <version ClassVersion="13" checksum="382065414"/>
