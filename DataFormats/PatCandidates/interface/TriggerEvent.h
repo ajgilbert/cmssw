@@ -144,9 +144,9 @@ namespace pat {
       /// Set the CMS magnet current averaged over run
       void setBCurrentAvg( float bCurrentAvg ) { bCurrentAvg_  = bCurrentAvg; };
       /// Get the name of the L1 trigger menu
-      std::string nameL1Menu() const { return nameL1Menu_; };
+      const std::string & nameL1Menu() const { return nameL1Menu_; };
       /// Get the name of the HLT trigger table
-      std::string nameHltTable() const { return nameHltTable_; };
+      const std::string & nameHltTable() const { return nameHltTable_; };
       /// Get the run flag
       bool wasRun() const { return run_; };
       /// Get the success flag

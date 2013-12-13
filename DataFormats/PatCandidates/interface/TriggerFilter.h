@@ -88,11 +88,11 @@ namespace pat {
       /// Set the L3 status
       void setSaveTags( bool saveTags ) { saveTags_ = saveTags; };
       /// Get the filter label
-      std::string label() const { return label_; };
+      const std::string & label() const { return label_; };
       /// Get the filter module type
-      std::string type() const { return type_; };
+      const std::string & type() const { return type_; };
       /// Get all trigger object collection indeces
-      std::vector< unsigned > objectKeys() const { return objectKeys_; };
+      const std::vector< unsigned > & objectKeys() const { return objectKeys_; };
       /// Get all trigger object type identifiers
 //       std::vector< trigger::TriggerObjectType > triggerObjectTypes() const { return triggerObjectTypes_; };
 //       std::vector< trigger::TriggerObjectType > objectIds()          const { return triggerObjectTypes(); }; // for backward compatibility

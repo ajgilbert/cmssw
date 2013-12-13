@@ -91,7 +91,7 @@ namespace pat {
       void addFilterId( trigger::TriggerObjectType triggerObjectType ) { addTriggerObjectType( triggerObjectType ); };                               // for backward compatibility
       void addFilterId( int                        triggerObjectType ) { addTriggerObjectType( trigger::TriggerObjectType( triggerObjectType ) ); }; // for backward compatibility
       /// Get the label of the collection the trigger object originates from
-      std::string collection() const { return collection_; };
+      const std::string & collection() const { return collection_; };
       /// Get all trigger object type identifiers
 //       std::vector< trigger::TriggerObjectType > triggerObjectTypes() const { return triggerObjectTypes_; };
 //       std::vector< trigger::TriggerObjectType > filterIds()          const { return triggerObjectTypes(); }; // for backward compatibility

@@ -63,7 +63,7 @@ namespace pat {
       /// Adds a new HLT path or L1 algorithm name
       void addPathOrAlgorithm( const std::string & name, bool pathLastFilterAccepted, bool pathL3FilterAccepted );
       /// Gets all HLT filter labels or L1 condition names
-      std::vector< std::string > filtersOrConditions() const { return filterLabels_; };
+      const std::vector< std::string > & filtersOrConditions() const { return filterLabels_; };
       /// Gets all HLT path or L1 algorithm names
       std::vector< std::string > pathsOrAlgorithms( bool pathLastFilterAccepted, bool pathL3FilterAccepted ) const;
       /// Checks, if a certain HLT filter label or L1 condition name is assigned
@@ -104,9 +104,9 @@ namespace pat {
       /// Adds a new L1 algorithm name
       void addAlgorithmName( const std::string & algorithmName, bool algoCondAccepted = true ) { addPathOrAlgorithm( algorithmName, algoCondAccepted, false ); };
       /// Gets all HLT filter labels
-      std::vector< std::string > filterLabels() const { return filtersOrConditions(); };
+      const std::vector< std::string > & filterLabels() const { return filtersOrConditions(); };
       /// Gets all L1 condition names
-      std::vector< std::string > conditionNames() const { return filtersOrConditions(); };
+      const std::vector< std::string > & conditionNames() const { return filtersOrConditions(); };
       /// Gets all HLT path names
       std::vector< std::string > pathNames( bool pathLastFilterAccepted = false, bool pathL3FilterAccepted = true ) const { return pathsOrAlgorithms( pathLastFilterAccepted, pathL3FilterAccepted ); };
       /// Gets all L1 algorithm names
