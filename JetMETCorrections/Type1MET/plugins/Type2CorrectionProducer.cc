@@ -1,57 +1,33 @@
-#ifndef JetMETCorrections_Type1MET_METCorrectionAlgorithm_h
-#define JetMETCorrections_Type1MET_METCorrectionAlgorithm_h
+// -*- C++ -*-
+// $Id: CorrMETData.h,v 1.7 2013/01/15 06:26:51 sakuma Exp $
 
-/** \class METCorrectionAlgorithm
- *
- * Algorithm for 
- *  o propagating jet energy corrections to MET (Type 1 MET corrections)
- *  o calibrating momentum of particles not within jets ("unclustered energy")
- *    and propagating those corrections to MET (Type 2 MET corrections)
- *
- * \authors Michael Schmitt, Richard Cavanaugh, The University of Florida
- *          Florent Lacroix, University of Illinois at Chicago
- *          Christian Veelken, LLR
- *          Tai Sakuma, Texas A&M
- *
- * \version $Revision: 1.2 $
- *
- * $Id: METCorrectionAlgorithm.h,v 1.2 2011/10/14 10:14:35 veelken Exp $
- *
- */
-
+//____________________________________________________________________________||
+#include "FWCore/Framework/interface/Frameworkfwd.h"
+#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/Event.h"
-#include "FWCore/Framework/interface/EventSetup.h"
+#include "FWCore/Framework/interface/MakerMacros.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
+
 #include "FWCore/Utilities/interface/InputTag.h"
 
 #include "DataFormats/METReco/interface/CorrMETData.h"
 
 #include <TFormula.h>
 
+#include <iostream>
 #include <vector>
 
-class METCorrectionAlgorithm 
+//____________________________________________________________________________||
+class Type2CorrectionProducer : public edm::EDProducer
 {
- public:
+public:
+  explicit Type2CorrectionProducer(const edm::ParameterSet&);
+  ~Type2CorrectionProducer() { }
 
-  explicit METCorrectionAlgorithm(const edm::ParameterSet&);
-  ~METCorrectionAlgorithm();
-
-  CorrMETData compMETCorrection(edm::Event&, const edm::EventSetup&);
-
- private:
+private:
 
   typedef std::vector<edm::InputTag> vInputTag;
-  vInputTag srcCHSSums_;
-  vInputTag srcType1Corrections_;
 
-  bool applyType0Corrections_;
-  bool applyType1Corrections_;
-  bool applyType2Corrections_;
-
-  double type0Rsoft_;
-  double type0Cuncl_;
-  
   typedef std::vector<std::string> vstring;
   struct type2BinningEntryType
   {
@@ -103,7 +79,7 @@ class METCorrectionAlgorithm
 //--- check that syntax of formula string is valid 
 //   (i.e. that TFormula "compiled" without errors)
       if ( !(binCorrFormula_->GetNdim() <= 1 && binCorrFormula_->GetNpar() == numParameter) ) 
-	throw cms::Exception("METCorrectionAlgorithm") 
+	throw cms::Exception("METCorrectionAlgorithm2") 
 	  << "Formula for Type 2 correction has invalid syntax = " << formula << " !!\n";
 
       for ( int parIndex = 0; parIndex < numParameter; ++parIndex ) {
@@ -120,11 +96,62 @@ class METCorrectionAlgorithm
     TFormula* binCorrFormula_;
     std::vector<double> binCorrParameter_;
   };
+
   std::vector<type2BinningEntryType*> type2Binning_;
+
+  void produce(edm::Event&, const edm::EventSetup&);
+
 };
 
-#endif
+//____________________________________________________________________________||
+Type2CorrectionProducer::Type2CorrectionProducer(const edm::ParameterSet& cfg)
+{
+  vInputTag srcUnclEnergySums = cfg.getParameter<vInputTag>("srcUnclEnergySums");
+  if ( cfg.exists("type2Binning") ) {
+    typedef std::vector<edm::ParameterSet> vParameterSet;
+    vParameterSet cfgType2Binning = cfg.getParameter<vParameterSet>("type2Binning");
+    for ( vParameterSet::const_iterator cfgType2BinningEntry = cfgType2Binning.begin();
+	  cfgType2BinningEntry != cfgType2Binning.end(); ++cfgType2BinningEntry ) {
+      type2Binning_.push_back(new type2BinningEntryType(*cfgType2BinningEntry, srcUnclEnergySums));
+    }
+  } else {
+    std::string type2CorrFormula = cfg.getParameter<std::string>("type2CorrFormula").data();
+    edm::ParameterSet type2CorrParameter = cfg.getParameter<edm::ParameterSet>("type2CorrParameter");
+    type2Binning_.push_back(new type2BinningEntryType(type2CorrFormula, type2CorrParameter, srcUnclEnergySums));
+  }
+  produces<CorrMETData>("");
+}
 
+//____________________________________________________________________________||
+void Type2CorrectionProducer::produce(edm::Event& evt, const edm::EventSetup& es)
+{
+  CorrMETData product;
 
- 
+  for ( std::vector<type2BinningEntryType*>::const_iterator type2BinningEntry = type2Binning_.begin();
+	type2BinningEntry != type2Binning_.end(); ++type2BinningEntry ) {
+    CorrMETData unclEnergySum;
+    for (vInputTag::const_iterator inputTag = (*type2BinningEntry)->srcUnclEnergySums_.begin();
+	 inputTag != (*type2BinningEntry)->srcUnclEnergySums_.end(); ++inputTag) {
+      edm::Handle<CorrMETData> unclEnergySummand;
+      evt.getByLabel(*inputTag, unclEnergySummand);
+
+      unclEnergySum += (*unclEnergySummand);
+    }
+
+    double unclEnergySumPt = sqrt(unclEnergySum.mex*unclEnergySum.mex + unclEnergySum.mey*unclEnergySum.mey);
+    double unclEnergyScaleFactor = (*type2BinningEntry)->binCorrFormula_->Eval(unclEnergySumPt);
+
+    unclEnergySum.mex = -unclEnergySum.mex;
+    unclEnergySum.mey = -unclEnergySum.mey;
+
+    product += (unclEnergyScaleFactor - 1.)*unclEnergySum;
+  }
+
+  std::auto_ptr<CorrMETData> pprod(new CorrMETData(product));
+  evt.put(pprod, "");
+}
+
+//____________________________________________________________________________||
+
+DEFINE_FWK_MODULE(Type2CorrectionProducer);
 
