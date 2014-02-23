@@ -21,12 +21,15 @@ readFiles = cms.untracked.vstring()
 secFiles = cms.untracked.vstring()
 process.source = cms.Source("PoolSource", fileNames = readFiles,
                             secondaryFileNames = secFiles)
-filterType = None
-sampleId = None
-conditions=None
+
+# We have to put working defaults here since multicrab doesn't respect the fact
+# that we require good argv to be passed
+filterType ="filterWJets_cfi"
+sampleId = -999
+conditions="ErrorParsingCLI"
 
 if not hasattr(sys, "argv"):
-    raise ValueError, "Can't extract CLI arguments!"
+    print "ERROR: Can't extract CLI arguments!"
 else:
     argOffset = 0
     if sys.argv[0] != 'cmsRun':
@@ -40,6 +43,7 @@ else:
     conditions = rawOptions.split(',')[2]
 
 print "Loading filter type"
+
 process.load(filterType)
 
 # Load standard services
@@ -150,7 +154,11 @@ process.globalReReco =  cms.Sequence(process.offlineBeamSpot+
 
 # Particle Flow re-processing
 process.pfReReco = cms.Sequence(process.particleFlowReco+
-                                process.ak5PFJets)
+                                process.ak5PFJets+
+                                process.kt6PFJets)
+
+process.kt6PFJets.doRhoFastjet = True
+process.kt6PFJets.Rho_EtaMax = cms.double( 4.4)
 
 process.rereco = cms.Sequence(
     process.localReReco*
@@ -173,6 +181,8 @@ process.selectedRecoJets = cms.EDFilter(
 process.hltMatchedJets = cms.EDProducer(
     'trgMatchedCandidateProducer',
     InputProducer = cms.InputTag('selectedRecoJets'),
+    matchUnprescaledTriggerOnly = cms.untracked.bool(False),
+    allowMultipleTriggers_ = cms.untracked.bool(True),
     hltTags = cms.VInputTag(
         [cms.InputTag(path, "", "HLT")
          for path in process.filterConfig.hltPaths]),
@@ -406,7 +416,9 @@ poolOutputCommands = cms.untracked.vstring(
     'keep patTriggerEvent_*_*_TANC',
     'keep PileupSummaryInfo_*_*_*',
     'keep *_ak5PFJets_*_TANC',
+    'keep *_kt6PFJets_*_TANC', # for PU subtraction
     'keep *_offlinePrimaryVertices_*_TANC',
+    'keep *_offlineBeamSpot_*_TANC',
     'keep recoTracks_generalTracks_*_TANC',
     'keep recoTracks_electronGsfTracks_*_TANC',
     'keep recoPFCandidates_particleFlow_*_TANC',
