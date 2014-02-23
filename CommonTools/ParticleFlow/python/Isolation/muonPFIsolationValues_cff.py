@@ -1,17 +1,5 @@
 import FWCore.ParameterSet.Config as cms
 
-# from CommonTools.ParticleFlow.Isolation.isoValMuonWithCharged_cfi import *
-# from CommonTools.ParticleFlow.Isolation.isoValMuonWithNeutral_cfi import *
-# from CommonTools.ParticleFlow.Isolation.isoValMuonWithPhotons_cfi import *
-
-# compute isolation values, from various collections of iso deposits.
-# could add the electrons and the muons as isolators, just to check that everything is fine
-
-# pfMuonIsolationFromDepositsSequence = cms.Sequence(
-#    isoValMuonWithCharged  +
-#    isoValMuonWithNeutral  +
-#    isoValMuonWithPhotons
-#)
 
 
 muPFIsoValueCharged03 = cms.EDProducer("CandIsolatorFromDeposits",
@@ -150,14 +138,7 @@ muPFIsoValuePU04 = cms.EDProducer("CandIsolatorFromDeposits",
    )
 )
 
-
-pfMuonIsolationFromDepositsSequence =  cms.Sequence(
-    # muPFIsoDepositCharged+
-    # muPFIsoDepositChargedAll+
-    # muPFIsoDepositGamma+
-    # muPFIsoDepositNeutral+
-    # muPFIsoDepositPU+
-    ##############################
+muonPFIsolationValuesSequence = (
     muPFIsoValueCharged03+
     muPFIsoValueChargedAll03+
     muPFIsoValueGamma03+

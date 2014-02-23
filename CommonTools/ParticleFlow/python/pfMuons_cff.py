@@ -7,7 +7,8 @@ from CommonTools.ParticleFlow.ParticleSelectors.pfSelectedMuons_cfi import *
 from CommonTools.ParticleFlow.Isolation.pfMuonIsolation_cff import *
 from CommonTools.ParticleFlow.Isolation.pfIsolatedMuons_cfi import *
 
-
+pfMuons = pfIsolatedMuons.clone()
+pfMuons.isolationCut = 999
 
 pfMuonSequence = cms.Sequence(
     pfAllMuons +
@@ -16,9 +17,10 @@ pfMuonSequence = cms.Sequence(
     pfMuonsFromVertex +
     pfSelectedMuons +
     # computing isolation variables:
-    pfMuonIsolationSequence +
+    pfMuonIsolationSequence + 
     # selecting isolated electrons:
-    pfIsolatedMuons 
+    pfIsolatedMuons+
+    pfMuons 
     )
 
 

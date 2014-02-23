@@ -1,24 +1,28 @@
 import FWCore.ParameterSet.Config as cms
 
-from CommonTools.ParticleFlow.Isolation.tools_cfi import *
-from CommonTools.ParticleFlow.Isolation.pfMuonIsolationFromDeposits_cff import *
+# iso deposits and isolation values, defined by the Muon POG
 
-isoDepMuonWithCharged   = isoDepositReplace( 'pfSelectedMuons', 'pfAllChargedHadrons' )
-isoDepMuonWithNeutral   = isoDepositReplace( 'pfSelectedMuons', 'pfAllNeutralHadrons' )
-isoDepMuonWithPhotons   = isoDepositReplace( 'pfSelectedMuons', 'pfAllPhotons' )
-#isoMuonWithElectrons = isoDepositReplace( 'pfSelectedMuons', 'pfAllElectrons' )
-#isoMuonWithMuons     = isoDepositReplace( 'pfSelectedMuons', 'pfAllMuons' )
+# this file is temporarily moved to this package.
+# in 4_4_X, we load this file from the RecoMuon/MuonIsolation package
+from  CommonTools.ParticleFlow.Isolation.muonPFIsolation_cff import *
 
-pfMuonIsoDepositsSequence = cms.Sequence(
-    isoDepMuonWithCharged   +
-    isoDepMuonWithNeutral   +
-    isoDepMuonWithPhotons   
-#    isoMuonWithElectrons +
-#    isoMuonWithMuons
-)
+# computing the isolation for the muons produced by PF2PAT, and not for reco muons
+sourceMuons = 'pfSelectedMuons'
+
+
+
+muPFIsoDepositCharged.src = sourceMuons
+muPFIsoDepositChargedAll.src = sourceMuons
+muPFIsoDepositNeutral.src = sourceMuons
+muPFIsoDepositGamma.src = sourceMuons
+muPFIsoDepositPU.src = sourceMuons
+
+# muPFIsoDepositCharged.ExtractorPSet.inputCandView = 'pfAllChargedHadronsIso'
+# muPFIsoDepositChargedAll.ExtractorPSet.inputCandView = 'pfAllChargedParticlesIso'
+# muPFIsoDepositNeutral.ExtractorPSet.inputCandView = 'pfAllNeutralHadronsIso'
+# muPFIsoDepositGamma.ExtractorPSet.inputCandView = 'pfAllPhotonsIso'
+# muPFIsoDepositPU.ExtractorPSet.inputCandView = 'pfPileUpAllChargedParticlesIso'
 
 pfMuonIsolationSequence = cms.Sequence(
-    pfMuonIsoDepositsSequence +
-    pfMuonIsolationFromDepositsSequence
+    muonPFIsolationSequence 
     )
-
