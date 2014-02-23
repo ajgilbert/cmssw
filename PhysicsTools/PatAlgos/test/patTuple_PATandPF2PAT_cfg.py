@@ -104,4 +104,4 @@ process.maxEvents.input = 100             ##  (e.g. -1 to run on all events)
 process.MessageLogger.cerr.FwkReport.reportEvery = 10
 
 # to relax the muon isolation, uncomment the following:
-#process.pfIsolatedMuonsPFlow.combinedIsolationCut = 99999
+#process.pfIsolatedMuonsPFlow.isolationCut = 99999

@@ -1,5 +1,5 @@
 //
-// $Id: PATElectronProducer.h,v 1.25 2011/03/31 09:52:39 namapane Exp $
+// $Id: PATElectronProducer.h,v 1.25.6.1 2012/03/29 12:36:38 cbern Exp $
 //
 
 #ifndef PhysicsTools_PatAlgos_PATElectronProducer_h
@@ -13,7 +13,7 @@
    a collection of objects of reco::GsfElectron.
 
   \author   Steven Lowette, James Lamb\
-  \version  $Id: PATElectronProducer.h,v 1.25 2011/03/31 09:52:39 namapane Exp $
+  \version  $Id: PATElectronProducer.h,v 1.25.6.1 2012/03/29 12:36:38 cbern Exp $
 */
 
 
@@ -79,8 +79,9 @@ namespace pat {
       bool          useParticleFlow_;
       edm::InputTag linkToPFSource_;  //SAK
       edm::InputTag pfElecSrc_;
+      edm::InputTag pfCandidateMap_;
       bool          embedPFCandidate_;
-
+ 
       /// embed high level selection variables?
       bool          embedHighLevelSelection_;
       edm::InputTag beamLineSrc_;
@@ -99,7 +100,9 @@ namespace pat {
 			 const reco::CandidateBaseRef& baseRef,
 			 const GenAssociations& genMatches,
 			 const IsoDepositMaps& deposits,
-			 const IsolationValueMaps& isolationValues) const;
+                         const bool pfId,
+			 const IsolationValueMaps& isolationValues,
+                         const IsolationValueMaps& isolationValuesNoPFId) const;
 
       void fillElectron2( Electron& anElectron,
 			  const reco::CandidatePtr& candPtrForIsolation,
@@ -139,6 +142,7 @@ namespace pat {
       pat::helper::MultiIsolator::IsolationValuePairs isolatorTmpStorage_; // better here than recreate at each event
       IsolationLabels isoDepositLabels_;
       IsolationLabels isolationValueLabels_;
+      IsolationLabels isolationValueLabelsNoPFId_;
 
       bool addEfficiencies_;
       pat::helper::EfficiencyLoader efficiencyLoader_;

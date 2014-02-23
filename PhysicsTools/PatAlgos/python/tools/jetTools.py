@@ -187,7 +187,7 @@ class AddJetCollection(ConfigToolBase):
         self.addParameter(self._defaultParameters,'genJetCollection',cms.InputTag("ak5GenJets"), "GenJet collection to match to")
         self.addParameter(self._defaultParameters,'doJetID',True, "add jetId variables to the added jet collection?")
         self.addParameter(self._defaultParameters,'jetIdLabel',"ak5", " specify the label prefix of the xxxJetID object; in general it is the jet collection tag like ak5, kt4 sc5, aso. For more information have a look to SWGuidePATTools#add_JetCollection")
-        self.addParameter(self._defaultParameters, 'outputModule', "out", "Output module label, empty label indicates no output, default: out")
+        self.addParameter(self._defaultParameters, 'outputModules', ['out'], "Output module labels, empty list of label indicates no output, default: ['out']")
         
         self._parameters=copy.deepcopy(self._defaultParameters)
         self._comment = ""
@@ -208,8 +208,12 @@ class AddJetCollection(ConfigToolBase):
                  genJetCollection   = None,
                  doJetID            = None,
                  jetIdLabel         = None,
-                 outputModule       = None):
+                 outputModule       = None,
+                 outputModules      = None):
 
+        ## stop processing if 'outputModule' exists and show the new alternative
+        if  not outputModule is None:
+            depricatedOptionOutputModule(self)
         if jetCollection  is None:
             jetCollection=self._defaultParameters['jetCollection'].value
         if algoLabel is None:
@@ -234,8 +238,8 @@ class AddJetCollection(ConfigToolBase):
             doJetID=self._defaultParameters['doJetID'].value
         if jetIdLabel  is None:
             jetIdLabel=self._defaultParameters['jetIdLabel'].value
-        if outputModule is None:
-            outputModule=self._defaultParameters['outputModule'].value    
+        if outputModules is None:
+            outputModules=self._defaultParameters['outputModules'].value    
 
         self.setParameter('jetCollection',jetCollection)
         self.setParameter('algoLabel',algoLabel)
@@ -249,7 +253,7 @@ class AddJetCollection(ConfigToolBase):
         self.setParameter('genJetCollection',genJetCollection)
         self.setParameter('doJetID',doJetID)
         self.setParameter('jetIdLabel',jetIdLabel)
-        self.setParameter('outputModule',outputModule)
+        self.setParameter('outputModules',outputModules)
    
         self.apply(process) 
         
@@ -266,7 +270,7 @@ class AddJetCollection(ConfigToolBase):
         genJetCollection=self._parameters['genJetCollection'].value
         doJetID=self._parameters['doJetID'].value
         jetIdLabel=self._parameters['jetIdLabel'].value
-        outputModule=self._parameters['outputModule'].value
+        outputModules=self._parameters['outputModules'].value
 
         ## create old module label from standardAlgo
         ## and standardType and return
@@ -368,8 +372,12 @@ class AddJetCollection(ConfigToolBase):
             ## switch general b tagging info switch off
             l1Jets.addBTagInfo = False
             ## adjust output
-            if outputModule is not '':                
-                getattr(process, outputModule).outputCommands.append("drop *_"+newLabel(oldLabel('selected'))+"_tagInfos_*")
+            if len(outputModules) > 0:
+                for outMod in outputModules:
+                    if hasattr(process,outMod):
+                        getattr(process,outMod).outputCommands.append("drop *_"+newLabel(oldLabel('selected'))+"_tagInfos_*")
+                    else:
+                        raise KeyError, "process has no OutModule named", outMod
 
         if (doJetID):
             l1Jets.addJetID = cms.bool(True)
@@ -392,12 +400,10 @@ class AddJetCollection(ConfigToolBase):
             ## add clone of jetCorrFactors
             addClone('patJetCorrFactors', src = jetCollection)
             switchJetCorrLevels(process, jetCorrLabel = jetCorrLabel, postfix=algoLabel+typeLabel)
-            #getattr(process,newLabel('patJetCorrFactors')).payload = jetCorrLabel[0]
-            #getattr(process,newLabel('patJetCorrFactors')).levels = jetCorrLabel[1]
             getattr(process, newLabel('patJets')).jetCorrFactorsSource = cms.VInputTag(  cms.InputTag(newLabel('patJetCorrFactors')) )
         
             ## switch type1MET corrections off for PFJets or JPTJets
-            if ( jetCollection.getModuleLabel().find('CaloJets')<0 ):
+            if not ( 'CaloJets' in  jetCollection.getModuleLabel() ):
                 print '================================================='
                 print 'Type1MET corrections are switched off for other  '
                 print 'jet types but CaloJets. Users are recommened to  '
@@ -453,7 +459,7 @@ class SwitchJetCollection(ConfigToolBase):
         self.addParameter(self._defaultParameters,'doJetID',True, "add jetId variables to the added jet collection")
         self.addParameter(self._defaultParameters,'jetIdLabel',"ak5", " specify the label prefix of the xxxJetID object; in general it is the jet collection tag like ak5, kt4 sc5, aso. For more information have a look to SWGuidePATTools#add_JetCollection")
         self.addParameter(self._defaultParameters,'postfix',"", "postfix of default sequence")
-        self.addParameter(self._defaultParameters, 'outputModule', "out", "Output module label, empty label indicates no output, default: out")
+        self.addParameter(self._defaultParameters, 'outputModules', ['out'], "Output module labels, empty list of label indicates no output, default: ['out']")
         
         self._parameters=copy.deepcopy(self._defaultParameters)
         self._comment = ""
@@ -471,8 +477,12 @@ class SwitchJetCollection(ConfigToolBase):
                  doJetID            = None,
                  jetIdLabel         = None,
                  postfix            = None,
-                 outputModule       = None):
+                 outputModule       = None,
+                 outputModules      = None):
                  
+        ## stop processing if 'outputModule' exists and show the new alternative
+        if  not outputModule is None:
+            depricatedOptionOutputModule(self)
         if jetCollection  is None:
             jetCollection=self._defaultParameters['jetCollection'].value
         if doJTA is None:
@@ -489,8 +499,8 @@ class SwitchJetCollection(ConfigToolBase):
             doJetID=self._defaultParameters['doJetID'].value
         if jetIdLabel  is None:
             jetIdLabel=self._defaultParameters['jetIdLabel'].value
-        if outputModule is None:
-            outputModule=self._defaultParameters['outputModule'].value     
+        if outputModules is None:
+            outputModules=self._defaultParameters['outputModules'].value     
         if postfix  is None:
             postfix=self._defaultParameters['postfix'].value
 
@@ -502,7 +512,7 @@ class SwitchJetCollection(ConfigToolBase):
         self.setParameter('genJetCollection',genJetCollection)
         self.setParameter('doJetID',doJetID)
         self.setParameter('jetIdLabel',jetIdLabel)
-        self.setParameter('outputModule',outputModule)
+        self.setParameter('outputModules',outputModules)
         self.setParameter('postfix',postfix)
         
         self.apply(process) 
@@ -516,7 +526,7 @@ class SwitchJetCollection(ConfigToolBase):
         genJetCollection=self._parameters['genJetCollection'].value
         doJetID=self._parameters['doJetID'].value
         jetIdLabel=self._parameters['jetIdLabel'].value
-        outputModule=self._parameters['outputModule'].value
+        outputModules=self._parameters['outputModules'].value
         postfix=self._parameters['postfix'].value
 
         ## save label of old input jet collection
@@ -582,8 +592,12 @@ class SwitchJetCollection(ConfigToolBase):
             ## jet production to 'False'
             applyPostfix(process, "patJets", postfix).addBTagInfo = False
             ## adjust output
-            if outputModule is not '':                
-                getattr(process, outputModule).outputCommands.append("drop *_selectedPatJets_tagInfos_*")
+            if len(outputModules) > 0:
+                for outMod in outputModules:
+                    if hasattr(process,outMod):
+                        getattr(process,outMod).outputCommands.append("drop *_selectedPatJets_tagInfos_*")
+                    else:
+                        raise KeyError, "process has no OutModule named", outMod
 
         if (doJetID):
             jetIdLabelNew = jetIdLabel + 'JetID'
@@ -605,12 +619,10 @@ class SwitchJetCollection(ConfigToolBase):
             ## switch JEC parameters to the new jet collection
             applyPostfix(process, "patJetCorrFactors", postfix).src = jetCollection
             switchJetCorrLevels(process, jetCorrLabel = jetCorrLabel, postfix=postfix)
-            #getattr( process, "patJetCorrFactors" + postfix).payload = jetCorrLabel[0]
-            #getattr( process, "patJetCorrFactors" + postfix).levels = jetCorrLabel[1]
             getattr( process, "patJets" + postfix).jetCorrFactorsSource = cms.VInputTag( cms.InputTag("patJetCorrFactors" + postfix ) )  
 
             ## switch type1MET corrections off for PFJets or JPTJets
-            if ( jetCollection.getModuleLabel().find('CaloJets')<0 ):
+            if not ( 'CaloJets' in jetCollection.getModuleLabel() ):
                 print '================================================='
                 print 'Type1MET corrections are switched off for other  '
                 print 'jet types but CaloJets. Users are recommened to  '
@@ -645,11 +657,15 @@ class SwitchJetCollection(ConfigToolBase):
             applyPostfix(process, "patJets", postfix).jetCorrFactorsSource=[]        
 
         ## adjust output when switching to PFJets
-        if (jetCollection.getModuleLabel().find('PFJets')>=0 ):
+        if ( 'PFJets' in jetCollection.getModuleLabel() or jetCollection.getModuleLabel().startswith("pfNo") or jetCollection.getModuleLabel() == 'particleFlow' ):
             ## in this case we can omit caloTowers and should keep pfCandidates
-            if outputModule is not '':                
-                getattr(process, outputModule).outputCommands.append("keep *_selectedPatJets_pfCandidates_*")
-                getattr(process, outputModule).outputCommands.append("drop *_selectedPatJets_caloTowers_*")
+            if len(outputModules) > 0:
+                for outMod in outputModules:
+                    if hasattr(process,outMod):
+                        getattr(process, outMod).outputCommands.append("keep *_selectedPatJets_pfCandidates_*")
+                        getattr(process, outMod).outputCommands.append("drop *_selectedPatJets_caloTowers_*")
+                    else:
+                        raise KeyError, "process has no OutModule named", outMod
 
 switchJetCollection=SwitchJetCollection()
 
@@ -704,7 +720,7 @@ class SetTagInfos(ConfigToolBase):
     _defaultParameters=dicttypes.SortedKeysDict()
     def __init__(self):
         ConfigToolBase.__init__(self)
-        self.addParameter(self._defaultParameters,'coll',"allLayer1Jets","jet collection to set tag infos for")
+        self.addParameter(self._defaultParameters,'coll',"patJets","jet collection to set tag infos for")
         self.addParameter(self._defaultParameters,'tagInfos',cms.vstring( ), "tag infos to set")
         self._parameters=copy.deepcopy(self._defaultParameters)
         self._comment = ""
@@ -745,7 +761,6 @@ class SetTagInfos(ConfigToolBase):
                         
 setTagInfos=SetTagInfos()
 
-
 class SwitchJetCorrLevels(ConfigToolBase):
 
     """ Switch from jet energy correction levels and do all necessary adjustments
@@ -763,11 +778,11 @@ class SwitchJetCorrLevels(ConfigToolBase):
         return self._defaultParameters
 
     def __call__(self,process,
-                 jetCorrLabel       = None,
-                 postfix            = None) :
-        if jetCorrLabel  is None:
+                 jetCorrLabel = None,
+                 postfix      = None) :
+        if jetCorrLabel is None:
             jetCorrLabel=self._defaultParameters['jetCorrLabel'].value
-        if postfix  is None:
+        if postfix is None:
             postfix=self._defaultParameters['postfix'].value
 
         self.setParameter('jetCorrLabel',jetCorrLabel)
@@ -800,7 +815,7 @@ class SwitchJetCorrLevels(ConfigToolBase):
                 if x == 'L1Offset':
                     if not error:
                         jetCorrFactorsModule.useNPV = True
-                        primaryVertices = 'offlinePrimaryVertices'
+                        jetCorrFactorsModule.primaryVertices = 'offlinePrimaryVertices'
                         ## we set this to True now as a L1 correction type should appear only once
                         ## otherwise levels is miss configured
                         error = True
@@ -812,12 +827,35 @@ class SwitchJetCorrLevels(ConfigToolBase):
                 if x == 'L1FastJet':
                     if not error:
                         ## re-run jet algo to compute rho and jetArea for the L1Fastjet corrections
-                        process.load("RecoJets.JetProducers.kt4PFJets_cfi")
-                        process.kt6PFJets = process.kt4PFJets.clone(doAreaFastjet=True, doRhoFastjet=True, rParam=0.6)
-                        process.patDefaultSequence.replace(jetCorrFactorsModule, process.kt6PFJets*jetCorrFactorsModule)
+                        jetType=''
+                        ## find out which jetType is used (PF or Calo)
+                        if jetCorrLabel[0].count('PF') > 0:
+                            ## only add module if it is not already part of the process
+                            ## ATTENTION: this assumes that new jet collection are always added after existing ones !!!
+                            if not hasattr(process,'kt6PFJets'+postfix):
+                                from RecoJets.JetProducers.kt4PFJets_cfi import kt4PFJets
+                                setattr(process,'kt6PFJets'+postfix, kt4PFJets.clone(doAreaFastjet=True, doRhoFastjet=True, rParam=0.6))
+                            jetType='PF'
+                        elif jetCorrLabel[0].count('Calo') > 0:
+                            ## only add module if it is not already part of the process
+                            ## ATTENTION: this assumes that new jet collection are always added after existing ones !!!
+                            if not hasattr(process,'kt6CaloJets'+postfix):
+                                from RecoJets.JetProducers.kt4CaloJets_cfi import kt4CaloJets
+                                setattr(process,'kt6CaloJets'+postfix, kt4CaloJets.clone(doAreaFastjet=True, doRhoFastjet=True, rParam=0.6))
+                            jetType='Calo'
+                        else:
+                            raise TypeError, "L1FastJet corrections are currently only supported for PF and Calo jets in PAT"
+                        ## check if a modified patDefaultSequence exists and add kt6Jets there (needed for example for usePF2PAT)
+                        if hasattr(process,'patDefaultSequence'+postfix):
+                            if not contains(getattr(process,'patDefaultSequence'+postfix), 'kt6'+jetType+'Jets'+postfix):
+                                getattr(process,'patDefaultSequence'+postfix).replace(jetCorrFactorsModule, getattr(process,'kt6'+jetType+'Jets'+postfix)*jetCorrFactorsModule)
+                        ## if no modified patDefaultSequence exists add kt6Jets to ordinary sequence (needed for example for addJetCollection)
+                        else:
+                            if not contains(getattr(process,'patDefaultSequence'), 'kt6'+jetType+'Jets'+postfix):
+                                getattr(process,'patDefaultSequence').replace(jetCorrFactorsModule, getattr(process,'kt6'+jetType+'Jets'+postfix)*jetCorrFactorsModule)
                         ## configure module
                         jetCorrFactorsModule.useRho = True
-                        jetCorrFactorsModule.rho = cms.InputTag('kt6PFJets', 'rho')
+                        jetCorrFactorsModule.rho = cms.InputTag('kt6'+jetType+'Jets'+postfix, 'rho')
                         ## we set this to True now as a L1 correction type should appear only once
                         ## otherwise levels is miss configured
                         error = True
@@ -827,3 +865,14 @@ class SwitchJetCorrLevels(ConfigToolBase):
                         print jetCorrLabel[1]
                         
 switchJetCorrLevels=SwitchJetCorrLevels()
+
+def depricatedOptionOutputModule(obj):
+    print "-------------------------------------------------------"
+    print " Error: the option 'outputModule' is not supported"
+    print "        anymore by:"
+    print "                   ", obj._label
+    print "        please use 'outputModules' now and specify the"
+    print "        names of all needed OutModules in there"
+    print "        (default: ['out'])"
+    print "-------------------------------------------------------"
+    raise KeyError, "unsupported option 'outputModule' used in '"+obj._label+"'"

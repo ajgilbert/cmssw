@@ -1,6 +1,3 @@
-//
-// $Id: PATMuonProducer.cc,v 1.43 2011/06/27 15:57:48 bellan Exp $
-//
 
 #include "PhysicsTools/PatAlgos/plugins/PATMuonProducer.h"
 
@@ -201,6 +198,13 @@ void PATMuonProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetu
   // this will be the new object collection
   std::vector<Muon> * patMuons = new std::vector<Muon>();
 
+  // prepare the TeV refit track retrieval
+  edm::Handle<reco::TrackToTrackMap> pickyMap, tpfmsMap;
+  if (addTeVRefits_) {
+    iEvent.getByLabel(pickySrc_, pickyMap);
+    iEvent.getByLabel(tpfmsSrc_, tpfmsMap);
+  }
+  
   if( useParticleFlow_ ){
     // get the PFCandidates of type muons 
     edm::Handle< reco::PFCandidateCollection >  pfMuons;
@@ -269,6 +273,28 @@ void PATMuonProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetu
       if( embedPFCandidate_ ) aMuon.embedPFCandidate();
       fillMuon( aMuon, muonBaseRef, pfBaseRef, genMatches, deposits, isolationValues );
 
+      //(SK) add TeV refits
+      // store the TeV refit track refs (only available for globalMuons)
+      if (addTeVRefits_ && muonRef->isGlobalMuon()) {
+	reco::TrackToTrackMap::const_iterator it;
+	const reco::TrackRef& globalTrack = muonRef->globalTrack();
+	
+	// If the getByLabel calls failed above (i.e. if the TeV refit
+	// maps/collections were not in the event), then the TrackRefs
+	// in the Muon object will remain null.
+	if (!pickyMap.failedToGet()) {
+	  it = pickyMap->find(globalTrack);
+	  if (it != pickyMap->end()) aMuon.setPickyMuon(it->val);
+	  if (embedPickyMuon_) aMuon.embedPickyMuon();
+	}
+ 
+	if (!tpfmsMap.failedToGet()) {
+	  it = tpfmsMap->find(globalTrack);
+	  if (it != tpfmsMap->end()) aMuon.setTpfmsMuon(it->val);
+	  if (embedTpfmsMuon_) aMuon.embedTpfmsMuon();
+	}
+      }
+      
       //-- SAK ----------------------------------------------------------------
       if (linkToPFSource_.label().length() && aMuon.pfCandidateRef().id() != pfForLinking.id()) {
         reco::CandidatePtr  source  = aMuon.pfCandidateRef()->sourceCandidatePtr(0);
@@ -286,13 +312,6 @@ void PATMuonProducer::produce(edm::Event & iEvent, const edm::EventSetup & iSetu
   else {
     edm::Handle<edm::View<reco::Muon> > muons;
     iEvent.getByLabel(muonSrc_, muons);
-
-    // prepare the TeV refit track retrieval
-    edm::Handle<reco::TrackToTrackMap> pickyMap, tpfmsMap;
-    if (addTeVRefits_) {
-      iEvent.getByLabel(pickySrc_, pickyMap);
-      iEvent.getByLabel(tpfmsSrc_, tpfmsMap);
-    }
 
     // embedding of muon MET corrections
     edm::Handle<edm::ValueMap<reco::MuonMETCorrectionData> > caloMETMuonCorrs;
@@ -524,6 +543,8 @@ void PATMuonProducer::fillDescriptions(edm::ConfigurationDescriptions & descript
   isoDepositsPSet.addOptional<edm::InputTag>("hcal");
   isoDepositsPSet.addOptional<edm::InputTag>("particle");
   isoDepositsPSet.addOptional<edm::InputTag>("pfChargedHadrons");
+  isoDepositsPSet.addOptional<edm::InputTag>("pfChargedAll");
+  isoDepositsPSet.addOptional<edm::InputTag>("pfPUChargedHadrons");
   isoDepositsPSet.addOptional<edm::InputTag>("pfNeutralHadrons");
   isoDepositsPSet.addOptional<edm::InputTag>("pfPhotons");
   isoDepositsPSet.addOptional<std::vector<edm::InputTag> >("user");
@@ -536,6 +557,8 @@ void PATMuonProducer::fillDescriptions(edm::ConfigurationDescriptions & descript
   isolationValuesPSet.addOptional<edm::InputTag>("hcal");
   isolationValuesPSet.addOptional<edm::InputTag>("particle");
   isolationValuesPSet.addOptional<edm::InputTag>("pfChargedHadrons");
+  isolationValuesPSet.addOptional<edm::InputTag>("pfChargedAll");
+  isolationValuesPSet.addOptional<edm::InputTag>("pfPUChargedHadrons");
   isolationValuesPSet.addOptional<edm::InputTag>("pfNeutralHadrons");
   isolationValuesPSet.addOptional<edm::InputTag>("pfPhotons");
   iDesc.addOptional("isolationValues", isolationValuesPSet);
@@ -584,6 +607,12 @@ void PATMuonProducer::readIsolationLabels( const edm::ParameterSet & iConfig, co
     }
     if (depconf.exists("pfChargedHadrons"))  {
       labels.push_back(std::make_pair(pat::PfChargedHadronIso, depconf.getParameter<edm::InputTag>("pfChargedHadrons")));
+    }
+    if (depconf.exists("pfChargedAll"))  {
+      labels.push_back(std::make_pair(pat::PfChargedAllIso, depconf.getParameter<edm::InputTag>("pfChargedAll")));
+    }
+    if (depconf.exists("pfPUChargedHadrons"))  {
+      labels.push_back(std::make_pair(pat::PfPUChargedHadronIso, depconf.getParameter<edm::InputTag>("pfPUChargedHadrons")));
     }
     if (depconf.exists("pfNeutralHadrons"))  {
       labels.push_back(std::make_pair(pat::PfNeutralHadronIso, depconf.getParameter<edm::InputTag>("pfNeutralHadrons")));
