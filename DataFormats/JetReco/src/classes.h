@@ -10,6 +10,7 @@
 #include "Math/PtEtaPhiM4D.h" 
 #include "Math/PxPyPzE4D.h" 
 
+#include "DataFormats/JetReco/interface/BasicJetCollection.h" 
 #include "DataFormats/JetReco/interface/CaloJetCollection.h" 
 #include "DataFormats/JetReco/interface/JPTJetCollection.h"
 #include "DataFormats/JetReco/interface/GenJetCollection.h"
@@ -36,6 +37,9 @@
 #include "DataFormats/JetReco/interface/FFTPFJetCollection.h"
 #include "DataFormats/JetReco/interface/FFTTrackJetCollection.h"
 #include "DataFormats/JetReco/interface/FFTBasicJetCollection.h"
+#include "DataFormats/JetReco/interface/FFTJetPileupSummary.h"
+#include "DataFormats/JetReco/interface/DiscretizedEnergyFlow.h"
+#include "DataFormats/JetReco/interface/PileupJetIdentifier.h"
 
 #include "DataFormats/Common/interface/Wrapper.h"
 #include "DataFormats/Common/interface/FwdRef.h" 
@@ -65,13 +69,15 @@ namespace {
     edm::reftobase::Holder<reco::Candidate, reco::CaloJetRef> rtb1;
     reco::JetTrackMatch<reco::CaloJetCollection> jtm1;
     edm::AssociationMap<edm::OneToMany<std::vector<reco::CaloJet>,std::vector<reco::Track>,unsigned int> > amp1;
+    edm::helpers::Key<edm::RefProd<std::vector<reco::CaloJet> > > k1;
     edm::helpers::KeyVal<edm::RefProd<reco::CaloJetCollection>,edm::RefProd<std::vector<reco::Track> > > kv1;
+    std::vector<edm::Ref<std::vector<reco::CaloJet> > > vrvr1;
+    std::vector<reco::CaloJetRefVector> vrv1;    
+    edm::Wrapper<std::vector<reco::CaloJetRefVector> > wfvrv1;
 
     reco::GenJetCollection o2;
     reco::GenJetRef r2;
     reco::GenJetFwdRef fwdr2;
-    std::vector<reco::CaloJetRefVector> vrv1;    
-    edm::Wrapper<std::vector<reco::CaloJetRefVector> > wfvrv1;
     reco::GenJetFwdPtr fwdp2;
     reco::GenJetRefVector rr2;
     reco::GenJetFwdRefVector fwdrr2;
@@ -125,6 +131,9 @@ namespace {
     edm::Wrapper<reco::PFJetFwdPtrVector> wrp5;
     edm::reftobase::Holder<reco::Candidate, reco::PFJetRef> rtb5;
     reco::JetTrackMatch<reco::PFJetCollection> jtm5;
+    std::vector<edm::Ref<std::vector<reco::PFJet> > > vrvr5;
+    std::vector<reco::PFJetRefVector> vrv5;
+    edm::Wrapper<std::vector<reco::PFJetRefVector> > wfvrv5;
 
     reco::TrackJetCollection o6;
     reco::TrackJetRef r6;
@@ -165,6 +174,10 @@ namespace {
     edm::reftobase::Holder<reco::Candidate, reco::PFClusterJetRef> rtb8;
     reco::JetTrackMatch<reco::PFClusterJetCollection> jtm8;
 
+    StoredPileupJetIdentifier spujetid;
+    std::vector<StoredPileupJetIdentifier> spujetidvec;
+    edm::ValueMap<StoredPileupJetIdentifier> spujetidvmap;
+    edm::Wrapper<edm::ValueMap<StoredPileupJetIdentifier> > spujetidvmapw;
 
     edm::reftobase::Holder<reco::Candidate,edm::RefToBase<reco::Jet> >  rtbb6;
 
@@ -253,8 +266,6 @@ namespace {
 
     edm::Ptr<reco::TrackJet> ptrtj;
     edm::PtrVector<reco::TrackJet> ptrvtj;
-    edm::Ptr<reco::Track> ptrt;
-    std::vector<edm::Ptr<reco::Track> > vptrt;
 
     edm::Ptr<reco::PFClusterJet> ptrpfcj;
     edm::PtrVector<reco::PFClusterJet> ptrvpfcj;
@@ -437,6 +448,14 @@ namespace {
     edm::PtrVector<reco::FFTJPTJet> ptrvgj_fft_7;
     edm::Association<reco::FFTJPTJetCollection> a_gj_fft_7;
     edm::Wrapper<edm::Association<reco::FFTJPTJetCollection> > w_a_gj_fft_7;
+
+    // Discretized energy flow
+    reco::DiscretizedEnergyFlow r_dflow;
+    edm::Wrapper<reco::DiscretizedEnergyFlow> wr_r_dflow;    
+
+    // Pile-up summary
+    reco::FFTJetPileupSummary r_fft_psumary;
+    edm::Wrapper<reco::FFTJetPileupSummary> wr_r_fft_psumary;
   };
 }
 #endif

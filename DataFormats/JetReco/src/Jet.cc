@@ -1,6 +1,6 @@
 // Jet.cc
 // Fedor Ratnikov, UMd
-// $Id: Jet.cc,v 1.24 2008/12/14 23:09:48 hegner Exp $
+// $Id: Jet.cc,v 1.28 2012/02/01 14:38:40 pandolf Exp $
 
 #include <sstream>
 #include <cmath>
@@ -10,6 +10,8 @@
 
 //Own header file
 #include "DataFormats/JetReco/interface/Jet.h"
+
+
 
 using namespace reco;
 
@@ -362,6 +364,63 @@ std::vector<const Candidate*> Jet::getJetConstituentsQuick () const {
   }
   return result;
 }
+
+
+
+float Jet::constituentPtDistribution() const {
+
+  Jet::Constituents constituents = this->getJetConstituents();
+
+  float sum_pt2 = 0.;
+  float sum_pt  = 0.;
+
+  for( unsigned iConst=0; iConst<constituents.size(); ++iConst ) {
+
+    float pt = constituents[iConst]->p4().Pt();
+    float pt2 = pt*pt;
+
+    sum_pt += pt;
+    sum_pt2 += pt2;
+
+  } //for constituents
+
+  float ptD_value = (sum_pt>0.) ? sqrt( sum_pt2 / (sum_pt*sum_pt) ) : 0.;
+
+  return ptD_value;
+
+} //constituentPtDistribution
+
+
+
+float Jet::constituentEtaPhiSpread() const {
+
+  Jet::Constituents constituents = this->getJetConstituents();
+
+
+  float sum_pt2 = 0.;
+  float sum_pt2deltaR2 = 0.;
+
+  for( unsigned iConst=0; iConst<constituents.size(); ++iConst ) {
+
+    LorentzVector thisConstituent = constituents[iConst]->p4();
+
+    float pt = thisConstituent.Pt();
+    float pt2 = pt*pt;
+    double dR = deltaR (*this, *(constituents[iConst]));
+    float pt2deltaR2 = pt*pt*dR*dR;
+
+    sum_pt2 += pt2;
+    sum_pt2deltaR2 += pt2deltaR2;
+
+  } //for constituents
+
+  float rmsCand_value = (sum_pt2>0.) ? sum_pt2deltaR2/sum_pt2 : 0.;
+
+  return rmsCand_value;
+
+} //constituentEtaPhiSpread
+
+
 
 std::string Jet::print () const {
   std::ostringstream out;
