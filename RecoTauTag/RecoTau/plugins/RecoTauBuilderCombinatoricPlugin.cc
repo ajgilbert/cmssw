@@ -9,6 +9,7 @@
 
 #include "DataFormats/TauReco/interface/PFTau.h"
 #include "DataFormats/TauReco/interface/RecoTauPiZero.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "RecoTauTag/RecoTau/interface/RecoTauConstructor.h"
 #include "RecoTauTag/RecoTau/interface/RecoTauQualityCuts.h"
 
@@ -36,13 +37,14 @@ class RecoTauBuilderCombinatoricPlugin : public RecoTauBuilderPlugin {
 
 RecoTauBuilderCombinatoricPlugin::RecoTauBuilderCombinatoricPlugin(
     const edm::ParameterSet& pset): RecoTauBuilderPlugin(pset),
-    qcuts_(pset.getParameter<edm::ParameterSet>("qualityCuts")),
-    usePFLeptonsAsChargedHadrons_(pset.getParameter<bool>("usePFLeptons")),
-    isolationConeSize_(pset.getParameter<double>("isolationConeSize")) {
+  qcuts_(pset.getParameterSet(
+        "qualityCuts").getParameterSet("signalQualityCuts")),
+  usePFLeptonsAsChargedHadrons_(pset.getParameter<bool>("usePFLeptons")),
+  isolationConeSize_(pset.getParameter<double>("isolationConeSize")) {
   typedef std::vector<edm::ParameterSet> VPSet;
   const VPSet& decayModes = pset.getParameter<VPSet>("decayModes");
   for (VPSet::const_iterator dm = decayModes.begin();
-       dm != decayModes.end(); ++dm) {
+      dm != decayModes.end(); ++dm) {
     decayModeInfo info;
     info.nCharged_ = dm->getParameter<uint32_t>("nCharged");
     info.nPiZeros_ = dm->getParameter<uint32_t>("nPiZeros");
@@ -52,20 +54,33 @@ RecoTauBuilderCombinatoricPlugin::RecoTauBuilderCombinatoricPlugin(
   }
 }
 
+namespace
+{
+  class SortPi0sDescendingPt {
+    public:
+      bool operator()(const RecoTauPiZero& a, const RecoTauPiZero& b) const {
+        return a.pt() > b.pt();
+      }  
+  };
+}
+
 RecoTauBuilderCombinatoricPlugin::return_type
 RecoTauBuilderCombinatoricPlugin::operator()(
     const reco::PFJetRef& jet,
     const std::vector<RecoTauPiZero>& piZeros,
-    const std::vector<PFCandidatePtr>& regionalExtras) const {
+    const std::vector<PFCandidatePtr>& regionalExtras) const 
+{
+  //std::cout << "<RecoTauBuilderCombinatoricPlugin::operator()>:" << std::endl;
 
   typedef std::vector<PFCandidatePtr> PFCandPtrs;
   typedef std::vector<RecoTauPiZero> PiZeroList;
 
   output_type output;
-
+  reco::VertexRef primaryVertexRef = primaryVertex(jet);
+ 
   // Update the primary vertex used by the quality cuts.  The PV is supplied by
   // the base class.
-  qcuts_.setPV(primaryVertex());
+  qcuts_.setPV(primaryVertexRef);
 
   // Get PFCHs from this jet.  They are already sorted by descending Pt
   PFCandPtrs pfchs;
@@ -77,6 +92,20 @@ RecoTauBuilderCombinatoricPlugin::operator()(
     // are very loose.
     pfchs = qcuts_.filterRefs(pfChargedCands(*jet));
   }
+  //std::cout << "#pfchs = " << pfchs.size() << std::endl;
+  //int idx = 0;
+  //for ( PFCandPtrs::const_iterator pfch = pfchs.begin();
+  //	  pfch != pfchs.end(); ++pfch ) {
+  //  std::cout << "pfch #" << idx << ": Pt = " << (*pfch)->pt() << ", eta = " << (*pfch)->eta() << ", phi = " << (*pfch)->phi() << std::endl;
+  //  ++idx;
+  //}
+  //std::cout << "#piZeros = " << piZeros.size() << std::endl;
+  //idx = 0;
+  //for ( std::vector<RecoTauPiZero>::const_iterator piZero = piZeros.begin();
+  //	  piZero != piZeros.end(); ++piZero ) {
+  //  std::cout << "piZero #" << idx << ": Pt = " << piZero->pt() << ", eta = " << piZero->eta() << ", phi = " << piZero->phi() << std::endl;
+  //  ++idx;
+  //}
 
   PFCandPtrs pfnhs = qcuts_.filterRefs(
       pfCandidates(*jet, reco::PFCandidate::h0));
@@ -91,8 +120,10 @@ RecoTauBuilderCombinatoricPlugin::operator()(
        decayMode != decayModesToBuild_.end(); ++decayMode) {
     // Find how many piZeros are in this decay mode
     size_t piZerosToBuild = decayMode->nPiZeros_;
+    //std::cout << "piZerosToBuild = " << piZerosToBuild << std::endl;
     // Find how many tracks are in this decay mode
     size_t tracksToBuild = decayMode->nCharged_;
+    //std::cout << "tracksToBuild = " << tracksToBuild << std::endl;
 
     // Skip decay mode if jet doesn't have the multiplicity to support it
     if (pfchs.size() < tracksToBuild)
@@ -110,15 +141,16 @@ RecoTauBuilderCombinatoricPlugin::operator()(
     /*
      * Begin combinatoric loop for this decay mode
      */
-
     // Loop over the different combinations of tracks
     for (PFCombo::iterator trackCombo = trackCombos.begin();
          trackCombo != trackCombos.end(); ++trackCombo) {
-
       xclean::CrossCleanPiZeros<PFCombo::combo_iterator>
         xCleaner(trackCombo->combo_begin(), trackCombo->combo_end());
 
       PiZeroList cleanPiZeros = xCleaner(piZeros);
+
+      // CV: sort collection of cross-cleaned pi0s by descending Pt
+      std::sort(cleanPiZeros.begin(), cleanPiZeros.end(), SortPi0sDescendingPt());
 
       // Skip decay mode if we don't have enough remaining clean pizeros to
       // build it.
@@ -135,11 +167,9 @@ RecoTauBuilderCombinatoricPlugin::operator()(
       // Build our piZero combo generator
       typedef tau::CombinatoricGenerator<PiZeroList> PiZeroCombo;
       PiZeroCombo piZeroCombos(piZero_begin, piZero_end, piZerosToBuild);
-
       // Loop over the different combinations of PiZeros
       for (PiZeroCombo::iterator piZeroCombo = piZeroCombos.begin();
            piZeroCombo != piZeroCombos.end(); ++piZeroCombo) {
-
         // Output tau
         RecoTauConstructor tau(jet, getPFCands(), true);
         // Reserve space in our collections
@@ -147,7 +177,7 @@ RecoTauBuilderCombinatoricPlugin::operator()(
                     RecoTauConstructor::kChargedHadron, tracksToBuild);
         tau.reserve(
             RecoTauConstructor::kSignal,
-            RecoTauConstructor::kGamma, 2*piZerosToBuild);  // k-factor = 2
+            RecoTauConstructor::kGamma, 2*piZerosToBuild); // k-factor = 2
         tau.reservePiZero(RecoTauConstructor::kSignal, piZerosToBuild);
 
         // FIXME - are all these reserves okay?  will they get propagated to the
@@ -300,7 +330,12 @@ RecoTauBuilderCombinatoricPlugin::operator()(
                 cleanPiZeros.end(), cleanPiZeros.end())
             );
 
-        output.push_back(tau.get(true));
+        std::auto_ptr<reco::PFTau> tauPtr = tau.get(true);
+
+	if ( primaryVertexRef.isNonnull() )
+	  tauPtr->setVertex(primaryVertexRef->position());
+
+        output.push_back(tauPtr);
       }
     }
   }

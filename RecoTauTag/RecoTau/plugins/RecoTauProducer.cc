@@ -76,9 +76,19 @@ RecoTauProducer::RecoTauProducer(const edm::ParameterSet& pset) {
     // Get plugin name
     const std::string& pluginType =
         builderPSet->getParameter<std::string>("plugin");
+    const std::string& pluginName =
+        builderPSet->getParameter<std::string>("name");
     // Build the plugin
-    builders_.push_back(
-        RecoTauBuilderPluginFactory::get()->create(pluginType, *builderPSet));
+    try {
+      builders_.push_back(
+          RecoTauBuilderPluginFactory::get()->create(
+            pluginType, *builderPSet));
+    } catch (...) {
+      edm::LogError("RecoTauBuilderException")
+        << "Exception when building a RecoTauBuilder plugin of type: "
+        << pluginType << " name: " << pluginName << std::endl;
+      throw; // rethrow
+    }
   }
 
   const VPSet& modfiers = pset.getParameter<VPSet>("modifiers");
@@ -87,9 +97,19 @@ RecoTauProducer::RecoTauProducer(const edm::ParameterSet& pset) {
     // Get plugin name
     const std::string& pluginType =
         modfierPSet->getParameter<std::string>("plugin");
+    const std::string& pluginName =
+        modfierPSet->getParameter<std::string>("name");
     // Build the plugin
-    modifiers_.push_back(
-        RecoTauModifierPluginFactory::get()->create(pluginType, *modfierPSet));
+    try {
+      modifiers_.push_back(
+          RecoTauModifierPluginFactory::get()->create(
+            pluginType, *modfierPSet));
+    } catch (...) {
+      edm::LogError("RecoTauModifierException")
+        << "Exception when building a RecoTauModifier plugin of type: "
+        << pluginType << " name: " << pluginName << std::endl;
+      throw; // rethrow
+    }
   }
 
   // Check if we want to apply a final output selection
@@ -170,7 +190,7 @@ void RecoTauProducer::produce(edm::Event& evt, const edm::EventSetup& es) {
         builder != builders_.end(); ++builder) {
       // Get a ptr_vector of taus from the builder
       reco::tau::RecoTauBuilderPlugin::output_type taus(
-          (*builder)(jetRegionRef, piZeros, uniqueRegionalCands));
+          (*builder)(jetRef, piZeros, uniqueRegionalCands));
       // Make sure all taus have their jetref set correctly
       std::for_each(taus.begin(), taus.end(),
           boost::bind(&reco::PFTau::setjetRef, _1, jetRef));

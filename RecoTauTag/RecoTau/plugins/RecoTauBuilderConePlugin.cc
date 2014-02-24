@@ -22,6 +22,7 @@
 
 #include "DataFormats/TauReco/interface/PFTau.h"
 #include "DataFormats/TauReco/interface/RecoTauPiZero.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/Math/interface/deltaR.h"
 
 #include "CommonTools/Utils/interface/StringObjectFunction.h"
@@ -55,7 +56,8 @@ class RecoTauBuilderConePlugin : public RecoTauBuilderPlugin {
 // ctor - initialize all of our variables
 RecoTauBuilderConePlugin::RecoTauBuilderConePlugin(
     const edm::ParameterSet& pset):RecoTauBuilderPlugin(pset),
-    qcuts_(pset.getParameter<edm::ParameterSet>("qualityCuts")),
+    qcuts_(pset.getParameterSet(
+          "qualityCuts").getParameterSet("signalQualityCuts")),
     usePFLeptonsAsChargedHadrons_(pset.getParameter<bool>("usePFLeptons")),
     leadObjecPtThreshold_(pset.getParameter<double>("leadObjectPt")),
     matchingCone_(pset.getParameter<std::string>("matchingCone")),
@@ -85,7 +87,7 @@ RecoTauBuilderConePlugin::return_type RecoTauBuilderConePlugin::operator()(
   // from the pizeros.
   RecoTauConstructor tau(jet, getPFCands(), true);
   // Setup our quality cuts to use the current vertex (supplied by base class)
-  qcuts_.setPV(primaryVertex());
+  qcuts_.setPV(primaryVertex(jet));
 
   typedef std::vector<PFCandidatePtr> PFCandPtrs;
 
@@ -306,9 +308,16 @@ RecoTauBuilderConePlugin::return_type RecoTauBuilderConePlugin::operator()(
       );
 
   // Put our built tau in the output - 'false' indicates don't build the
-  // leading candidtes, we already did that explicitly above.
+  // leading candidates, we already did that explicitly above.
 
-  output.push_back(tau.get(false));
+  std::auto_ptr<reco::PFTau> tauPtr = tau.get(false);
+
+  // Set event vertex position for tau
+  reco::VertexRef primaryVertexRef = primaryVertex(jet);
+  if ( primaryVertexRef.isNonnull() )
+    tauPtr->setVertex(primaryVertexRef->position());
+
+  output.push_back(tauPtr);
   return output.release();
 }
 }}  // end namespace reco::tauk

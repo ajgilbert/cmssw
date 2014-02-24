@@ -13,6 +13,7 @@
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 #include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
 #include "DataFormats/TauReco/interface/PFTau.h"
+#include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include <vector>
 #include <algorithm>
 #include <numeric>

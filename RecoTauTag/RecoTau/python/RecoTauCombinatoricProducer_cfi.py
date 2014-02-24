@@ -1,5 +1,6 @@
 import FWCore.ParameterSet.Config as cms
 from RecoTauTag.RecoTau.PFRecoTauQualityCuts_cfi import PFTauQualityCuts
+from RecoTauTag.RecoTau.RecoTauEnergyRecoveryPlugin_cfi import pfTauEnergyRecoveryPlugin
 
 '''
 
@@ -67,8 +68,7 @@ _combinatoricTauConfig = cms.PSet(
     pfCandSrc = cms.InputTag("particleFlow"),
     usePFLeptons = cms.bool(True),
     isolationConeSize = cms.double(0.5),
-    qualityCuts = PFTauQualityCuts.signalQualityCuts,
-    primaryVertexSrc = cms.InputTag("offlinePrimaryVertices"),
+    qualityCuts = PFTauQualityCuts,
     decayModes = cms.VPSet(
         combinatoricDecayModeConfigs.config1prong0pi0,
         combinatoricDecayModeConfigs.config1prong1pi0,
@@ -93,7 +93,7 @@ combinatoricRecoTaus = cms.EDProducer(
         cms.PSet(
             name = cms.string("sipt"),
             plugin = cms.string("RecoTauImpactParameterSignificancePlugin"),
-            pvSrc = cms.InputTag("offlinePrimaryVertices"),
+            qualityCuts = PFTauQualityCuts,
         ),
         # Electron rejection
         cms.PSet(
@@ -109,5 +109,11 @@ combinatoricRecoTaus = cms.EDProducer(
             maximumForElectrionPreIDOutput       = cms.double(-0.1),
             DataType = cms.string("AOD"),
         ),
+        # Tau energy recovery algorithm
+        cms.PSet(
+            pfTauEnergyRecoveryPlugin,
+            name = cms.string("tau_en_recovery"),
+            plugin = cms.string("RecoTauEnergyRecoveryPlugin")
+        )
     ),
 )
