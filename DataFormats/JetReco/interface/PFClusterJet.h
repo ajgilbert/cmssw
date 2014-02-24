@@ -19,7 +19,7 @@
 
 
 #include "DataFormats/JetReco/interface/Jet.h"
-#include "DataFormats/ParticleFlowReco/interface/RecoPFClusterRefCandidate.h"
+#include "DataFormats/RecoCandidate/interface/RecoPFClusterRefCandidate.h"
 
 
 namespace reco {
