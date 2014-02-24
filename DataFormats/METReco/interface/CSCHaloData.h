@@ -45,6 +45,15 @@ namespace reco {
     // Number of CSCRecHits with non-collision timing
     short int NumberOfOutTimeHits() const { return nOutOfTimeHits;}
     short int NOutOfTimeHits() const {return nOutOfTimeHits;}
+    // Look at number of muons with timing consistent with incoming particles
+    short int NTracksSmalldT() const { return nTracks_Small_dT;}
+    short int NTracksSmallBeta() const{ return nTracks_Small_beta; }
+    short int NTracksSmallBetaAndSmalldT() const { return nTracks_Small_dT_Small_beta; }
+
+    // MLR
+    short int NFlatHaloSegments() const{ return nFlatHaloSegments; }
+    bool GetSegmentsInBothEndcaps() const{ return segments_in_both_endcaps; }
+    // End MLR
 
     // Get Reference to the Tracks
     edm::RefVector<reco::TrackCollection>& GetTracks(){return TheTrackRefs;}
@@ -57,6 +66,9 @@ namespace reco {
     void SetNOutOfTimeTriggers(short int PlusZ,short int MinusZ){ nOutOfTimeTriggers_PlusZ = PlusZ ; nOutOfTimeTriggers_MinusZ = MinusZ;}
     // Set number of CSCRecHits with non-collision timing
     void SetNOutOfTimeHits(short int num){ nOutOfTimeHits = num ;}
+    // Set number of tracks with timing consistent with incoming particles
+    void SetNIncomingTracks(short int n_small_dT, short int n_small_beta, short int n_small_both) {  nTracks_Small_dT = n_small_dT; 
+      nTracks_Small_beta = n_small_beta; nTracks_Small_dT_Small_beta = n_small_both;}
 
     // Set HLT Bit
     void SetHLTBit(bool status) { HLTAccept = status ;} 
@@ -65,7 +77,14 @@ namespace reco {
     //std::vector<const GlobalPoint>& GetCSCTrackImpactPositions() const {return TheGlobalPositions;}
     const std::vector<GlobalPoint>& GetCSCTrackImpactPositions() const {return TheGlobalPositions;}
     std::vector<GlobalPoint>& GetCSCTrackImpactPositions() {return TheGlobalPositions;}
-    
+
+    // MLR
+    // Set # of CSCSegments that appear to be part of a halo muon
+    // If there is more than 1 muon, this is the number of segments in the halo muon
+    // with the largest number of segments that pass the cut.
+    void SetNFlatHaloSegments(short int nSegments) {nFlatHaloSegments = nSegments;}
+    void SetSegmentsBothEndcaps(bool b) { segments_in_both_endcaps = b; }
+    // End MLR
   private:
     edm::RefVector<reco::TrackCollection> TheTrackRefs;
 
@@ -85,6 +104,19 @@ namespace reco {
     short int nOutOfTimeTriggers_MinusZ;
     // number of out-of-time CSCRecHit2Ds (assumes the event triggered at the bx of the beam crossing)
     short int nOutOfTimeHits;
+    // number of cosmic muon outer (CSC) tracks with (T_segment_outer - T_segment_inner) < max_dt_muon_segment
+    short int nTracks_Small_dT;
+    // number of cosmic muon outer (CSC) tracks with free inverse beta < max_free_inverse_beta
+    short int nTracks_Small_beta;
+    // number of cosmic muon outer (CSC) tracks with both 
+    // (T_segment_outer - T_segment_inner) <  max_dt_muon_segment and free inverse beta < max_free_inverse_beta
+    short int nTracks_Small_dT_Small_beta;
+
+    // MLR
+    // number of CSCSegments that are flat and have the same (r,phi)
+    short int nFlatHaloSegments;
+    bool segments_in_both_endcaps;
+    // end MLR
 
   };
 

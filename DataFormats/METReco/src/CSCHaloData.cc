@@ -7,9 +7,6 @@
   [date]: October 15, 2009
 */
 
-
-
-
 using namespace reco;
 CSCHaloData::CSCHaloData()
 {
@@ -22,6 +19,14 @@ CSCHaloData::CSCHaloData()
   nOutOfTimeTriggers_PlusZ=0;
   nOutOfTimeTriggers_MinusZ=0;
   nOutOfTimeHits = 0 ;
+
+  nTracks_Small_dT = 0;
+  nTracks_Small_beta =0;
+  nTracks_Small_dT_Small_beta = 0;
+
+  // MLR
+  nFlatHaloSegments = 0;
+  // End MLR
 }
 
 int CSCHaloData::NumberOfHaloTriggers(HaloData::Endcap z) const
