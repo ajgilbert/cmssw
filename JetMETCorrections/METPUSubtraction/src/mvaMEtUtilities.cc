@@ -35,10 +35,10 @@ mvaMEtUtilities::mvaMEtUtilities(const edm::ParameterSet& cfg)
   mvaCut_[1][2][0] =  0.2; mvaCut_[1][2][1] = 0.2; mvaCut_[1][2][2] = 0.5; mvaCut_[1][2][3] = 0.7;
   mvaCut_[1][3][0] =  0.3; mvaCut_[1][3][1] = 0.2; mvaCut_[1][3][2] = 0.7; mvaCut_[1][3][3] = 0.8;
   //Met Id => used
-  mvaCut_[2][0][0] = -0.2; mvaCut_[2][0][1] = -0.3; mvaCut_[2][0][2] = -0.5; mvaCut_[2][0][3] = -0.5;
-  mvaCut_[2][1][0] = -0.2; mvaCut_[2][1][1] = -0.2; mvaCut_[2][1][2] = -0.5; mvaCut_[2][1][3] = -0.3;
-  mvaCut_[2][2][0] = -0.2; mvaCut_[2][2][1] = -0.2; mvaCut_[2][2][2] = -0.2; mvaCut_[2][2][3] =  0.1;
-  mvaCut_[2][3][0] = -0.2; mvaCut_[2][3][1] = -0.2; mvaCut_[2][3][2] =  0. ; mvaCut_[2][3][3] =  0.2;
+  mvaCut_[2][0][0] = -0.2; mvaCut_[2][0][1] =  0. ; mvaCut_[2][0][2] =  0.2; mvaCut_[2][0][3] =  0.5;
+  mvaCut_[2][1][0] =  0.2; mvaCut_[2][1][1] = -0.6; mvaCut_[2][1][2] = -0.6; mvaCut_[2][1][3] = -0.4;
+  mvaCut_[2][2][0] =  0.2; mvaCut_[2][2][1] = -0.6; mvaCut_[2][2][2] = -0.6; mvaCut_[2][2][3] = -0.4;
+  mvaCut_[2][3][0] =  0.2; mvaCut_[2][3][1] = -0.8; mvaCut_[2][3][2] = -0.8; mvaCut_[2][3][3] = -0.4;
 }
 
 mvaMEtUtilities::~mvaMEtUtilities() 
@@ -107,7 +107,7 @@ std::vector<mvaMEtUtilities::JetInfo> mvaMEtUtilities::cleanJets(const std::vect
 	  lepton != leptons.end(); ++lepton ) {
       if ( deltaR(jet->p4_, lepton->p4_) < dRmatch ) isOverlap = true;	
     }
-    if ( jet->p4_.pt() > ptThreshold && !isOverlap ) retVal.push_back(*jet);
+    if ( jet->p4_.pt() > ptThreshold && !isOverlap && fabs(jet->p4_.eta()) < 5.0 ) retVal.push_back(*jet);
   }
   return retVal;
 }
