@@ -859,7 +859,8 @@ class MCEmbeddingValidationAnalyzer : public edm::EDAnalyzer
 	      if ( !trackBuilder ) 
 		throw cms::Exception("MCEmbeddingValidationAnalyzer")
 		  << " Failed to access TransientTrackBuilder !!\n";
-	      EcalClusterLazyTools myEcalCluster(evt, es, ebRHToken_, eeRHToken_);
+	      // EcalClusterLazyTools myEcalCluster(evt, es, ebRHToken_, eeRHToken_);
+        EcalClusterLazyTools myEcalCluster(evt, es, edm::InputTag("reducedEcalRecHitsEB"), edm::InputTag("reducedEcalRecHitsEE"));
 	      /*double mva = fMVA_->mvaValue(*recLepton, theVertex->front(), *trackBuilder, myEcalCluster);
 	      if ( recLepton->pt() < 20. ) {
 		if      ( TMath::Abs(recLepton->eta()) < 0.8   ) histogramMVAptLt20AbsEtaLt0_8_->Fill(mva, evtWeight);

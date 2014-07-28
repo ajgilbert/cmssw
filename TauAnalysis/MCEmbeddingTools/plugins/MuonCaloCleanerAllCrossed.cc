@@ -20,8 +20,9 @@ MuonCaloCleanerAllCrossed::MuonCaloCleanerAllCrossed(const edm::ParameterSet& cf
     srcESrecHits_(cfg.getParameter<edm::InputTag>("esRecHits"))
 {
   edm::ParameterSet cfgTrackAssociator = cfg.getParameter<edm::ParameterSet>("trackAssociator");
-  edm::ConsumesCollector iC = consumesCollector();
-  trackAssociatorParameters_.loadParameters(cfgTrackAssociator, iC);
+  //edm::ConsumesCollector iC = consumesCollector();
+  //trackAssociatorParameters_.loadParameters(cfgTrackAssociator, iC);
+  trackAssociatorParameters_.loadParameters(cfgTrackAssociator);
   trackAssociator_.useDefaultPropagator();
 
   // maps of detId to energy deposit attributed to muon

@@ -4,6 +4,7 @@
 
 #include "FWCore/Utilities/interface/Exception.h"
 
+#include "GeneratorInterface/ExternalDecays/interface/DecayRandomEngine.h"
 #include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -165,6 +166,15 @@ GenMuonRadiationAlgorithm::GenMuonRadiationAlgorithm(const edm::ParameterSet& cf
     photos_(0),
     pythia_(0)
 {
+  edm::Service<edm::RandomNumberGenerator> rng;
+  if ( !rng.isAvailable() )
+    throw cms::Exception("Configuration")
+      << "The RandomNumberProducer module requires the RandomNumberGeneratorService\n"
+      << "which appears to be absent. Please add that service to your configuration\n"
+      << "or remove the modules that require it.\n";
+
+  // this is a global variable defined in GeneratorInterface/ExternalDecays/src/ExternalDecayDriver.cc
+  decayRandomEngine = &rng->getEngine();
   std::string mode_string = cfg.getParameter<std::string>("mode");
   if      ( mode_string == "pythia" ) mode_ = kPYTHIA;
   else if ( mode_string == "photos" ) mode_ = kPHOTOS;
@@ -172,11 +182,12 @@ GenMuonRadiationAlgorithm::GenMuonRadiationAlgorithm(const edm::ParameterSet& cf
     << " Invalid Configuration Parameter 'mode' = " << mode_string << " !!\n";
 
   if ( mode_ == kPYTHIA ) pythia_ = new myPythia6ServiceWithCallback(cfg);
-  if ( mode_ == kPHOTOS ){
+  if ( mode_ == kPHOTOS ) photos_ = new gen::PhotosInterface(cfg.getParameter<edm::ParameterSet>("PhotosOptions"));
+  /*if ( mode_ == kPHOTOS ){
     photos_ =  (gen::PhotosInterfaceBase*)(PhotosFactory::get()->create("Photos2155", cfg.getParameter<edm::ParameterSet>("PhotosOptions")));
     //settings?
     //usesResource(edm::SharedResourceNames::kPhotos);
-  }
+  }*/ 
 
   verbosity_ = ( cfg.exists("verbosity") ) ? 
     cfg.getParameter<int>("verbosity") : 0;
@@ -224,10 +235,10 @@ namespace
   }
 }
 
-reco::Candidate::LorentzVector GenMuonRadiationAlgorithm::compFSR(const edm::StreamID& streamID,
-                                                                  const reco::Candidate::LorentzVector& muonP4, int muonCharge,
+reco::Candidate::LorentzVector GenMuonRadiationAlgorithm::compFSR(const reco::Candidate::LorentzVector& muonP4, int muonCharge,
                                                                   const reco::Candidate::LorentzVector& otherP4, int& errorFlag)
 {
+  /*
   edm::Service<edm::RandomNumberGenerator> rng;
   if ( !rng.isAvailable() ) 
     throw cms::Exception("Configuration")
@@ -237,7 +248,7 @@ reco::Candidate::LorentzVector GenMuonRadiationAlgorithm::compFSR(const edm::Str
   
   // this is a global variable defined in GeneratorInterface/ExternalDecays/src/ExternalDecayDriver.cc
   CLHEP::HepRandomEngine& decayRandomEngine = rng->getEngine(streamID);
-  photos_->setRandomEngine(&decayRandomEngine);
+  photos_->setRandomEngine(&decayRandomEngine);*/
 
   if ( verbosity_ ) {
     std::cout << "<GenMuonRadiationAlgorithm::compMuonFSR>:" << std::endl;

@@ -14,8 +14,9 @@ MuonDetCleaner::MuonDetCleaner(const edm::ParameterSet& cfg)
   : srcSelectedMuons_(cfg.getParameter<edm::InputTag>("selectedMuons"))
 {
   edm::ParameterSet cfgTrackAssociator = cfg.getParameter<edm::ParameterSet>("trackAssociator");
-  edm::ConsumesCollector iC = consumesCollector();
-  trackAssociatorParameters_.loadParameters(cfgTrackAssociator, iC);
+  //edm::ConsumesCollector iC = consumesCollector();
+  //trackAssociatorParameters_.loadParameters(cfgTrackAssociator, iC);
+  trackAssociatorParameters_.loadParameters(cfgTrackAssociator);
   trackAssociator_.useDefaultPropagator();
 
   // maps of detId to number of hits attributed to muon

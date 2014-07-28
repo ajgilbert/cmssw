@@ -27,9 +27,10 @@
 #include "DataFormats/Candidate/interface/Particle.h"
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 #include "GeneratorInterface/Pythia6Interface/interface/Pythia6Service.h"
-#include "GeneratorInterface/TauolaInterface/interface/TauolaInterfaceBase.h"
-#include "GeneratorInterface/TauolaInterface/interface/TauolaFactory.h"
-#include "FWCore/Utilities/interface/RandomNumberGenerator.h"
+#include "GeneratorInterface/ExternalDecays/interface/TauolaInterface.h"
+//#include "GeneratorInterface/TauolaInterface/interface/TauolaInterfaceBase.h"
+//#include "GeneratorInterface/TauolaInterface/interface/TauolaFactory.h"
+//#include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 
 #include "TauAnalysis/MCEmbeddingTools/interface/GenMuonRadiationAlgorithm.h"
 
@@ -51,7 +52,8 @@ class ParticleReplacerZtautau : public ParticleReplacerBase
   virtual void endJob();
 
  private:
-  void transformMuMu2LepLep(CLHEP::HepRandomEngine& randomEngine, reco::Particle*, reco::Particle*);
+  void transformMuMu2LepLep(reco::Particle*, reco::Particle*);
+  //void transformMuMu2LepLep(CLHEP::HepRandomEngine& randomEngine, reco::Particle*, reco::Particle*);
   void transformMuMu2TauNu(reco::Particle*, reco::Particle*);
 
   HepMC::GenEvent* processEventWithTauola(HepMC::GenEvent*);
@@ -82,7 +84,7 @@ class ParticleReplacerZtautau : public ParticleReplacerBase
   bool rfMirror_; // mirror the muon momentum vectors at the plane defined by the Z axis and the proton axis
                   // This preserves the Z polarization from what we have seen so far.
 
-  gen::TauolaInterfaceBase* tauola_;
+  gen::TauolaInterface* tauola_;
   // keep track if TAUOLA interface has already been initialized.
   // Needed to avoid multiple initializations of TAUOLA interface,
   // which makes TAUOLA crash.
