@@ -1,5 +1,5 @@
-#ifndef JetMETCorrections_Type1MET_TauMETAlgo_h
-#define JetMETCorrections_Type1MET_TauMETAlgo_h
+#ifndef TauMETAlgo_h
+#define TauMETAlgo_h
 
 // Authors: Alfredo Gurrola, Chi Nhan Nguyen
 

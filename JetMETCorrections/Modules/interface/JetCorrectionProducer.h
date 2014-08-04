@@ -97,11 +97,8 @@ namespace cms {
 	  {
 	    if ( !(mCorrectors[i]->vectorialCorrection()) ) {
 	      // Scalar correction
-              double scale = 1.; 
-              if (!(mCorrectors[i]->refRequired()))
-	        scale = mCorrectors[i]->correction (*referenceJet,fEvent,fSetup);
-              else
-                scale = mCorrectors[i]->correction (*referenceJet,jetRef,fEvent,fSetup);
+	      double scale = mCorrectors[i]->correction (*referenceJet,jetRef,
+							 fEvent,fSetup);
 	      if (mVerbose)
 		std::cout<<"JetCorrectionProducer::produce-> Corrector # "
 			 <<i<<", correction factor: "<<scale<<std::endl;

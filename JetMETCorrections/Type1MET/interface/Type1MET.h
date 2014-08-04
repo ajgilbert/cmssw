@@ -1,5 +1,5 @@
-#ifndef JetMETCorrections_Type1MET_Type1MET_h
-#define JetMETCorrections_Type1MET_Type1MET_h
+#ifndef Type1MET_Type1MET_h
+#define Type1MET_Type1MET_h
 // -*- C++ -*-
 //
 // Package:    Type1MET
@@ -15,7 +15,7 @@
 //
 // Original Author:  Oct 12 08:23
 //         Created:  Wed Oct 12 12:16:04 CDT 2005
-// $Id: Type1MET.h,v 1.6 2011/09/02 13:16:23 lacroix Exp $
+// $Id: Type1MET.h,v 1.2 2010/05/16 15:21:59 jdamgov Exp $
 //
 //
 
@@ -50,9 +50,7 @@ namespace cms
     std::string metType;
     std::string inputUncorMetLabel;
     std::string inputUncorJetsLabel;
-    edm::InputTag inputUncorUnlusteredLabel;
     std::string correctorLabel;
-    std::string refcorrectorLabel;
     double jetPTthreshold;
     double jetEMfracLimit;
     double UscaleA;
@@ -60,7 +58,6 @@ namespace cms
     double UscaleC;
     bool useTypeII;
     bool hasMuonsCorr;
-    bool subtractL1Fast_;
   };
 }
 #endif

@@ -61,6 +61,7 @@ double L1FastjetCorrector::correction (const reco::Jet& fJet) const
 
 //______________________________________________________________________________
 double L1FastjetCorrector::correction(const reco::Jet& fJet,
+				      const edm::RefToBase<reco::Jet>& fJetRef,
 				      const edm::Event& fEvent,
 				      const edm::EventSetup& fSetup) const
 {

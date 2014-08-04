@@ -58,6 +58,7 @@ double L1OffsetCorrector::correction(const reco::Jet& fJet) const
 //--- Returns correction for a given jet using event indormation ---------
 //------------------------------------------------------------------------
 double L1OffsetCorrector::correction(const reco::Jet& fJet, 
+                                     const edm::RefToBase<reco::Jet>& fJetRef,
                                      const edm::Event& fEvent, 
                                      const edm::EventSetup& fSetup) const 
 {
@@ -72,7 +73,7 @@ double L1OffsetCorrector::correction(const reco::Jet& fJet,
   } 
   if (NPV > 0) {
     mCorrector->setJetEta(fJet.eta());
-    mCorrector->setJetPt(fJet.pt());
+    mCorrector->setJetE(fJet.energy());
     mCorrector->setNPV(NPV);
     result = mCorrector->getCorrection();
   }

@@ -42,9 +42,7 @@ public:
   
   /// if correction needs event information
   virtual bool eventRequired () const {return true;} 
-
-  //----- if correction needs a jet reference -------------
-  virtual bool refRequired () const {return true;} 
+  
   
   //
   // private member functions
