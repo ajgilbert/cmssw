@@ -90,7 +90,7 @@ MCParticleReplacer::produce(edm::Event& evt, const edm::EventSetup& es)
   }
 }
 
-void MCParticleReplacer::beginRun(edm::Run& run,const edm::EventSetup& es)
+void MCParticleReplacer::beginRun(edm::Run const& run, edm::EventSetup const& es)
 {
   replacer_->beginRun(run, es);
 }

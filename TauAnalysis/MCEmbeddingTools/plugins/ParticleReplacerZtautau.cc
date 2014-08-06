@@ -159,7 +159,8 @@ ParticleReplacerZtautau::ParticleReplacerZtautau(const edm::ParameterSet& cfg)
 
   // this is a global variable defined in GeneratorInterface/ExternalDecays/src/ExternalDecayDriver.cc
   decayRandomEngine = &rng->getEngine();
-
+  // Tauola requires the RNG to be set before initialisation, which will be called in beginRun()
+  tauola_->setRandomEngine(decayRandomEngine);
   std::string applyMuonRadiationCorrection_string = cfg.getParameter<std::string>("applyMuonRadiationCorrection");
   if ( applyMuonRadiationCorrection_string != "" ) {
     edm::ParameterSet cfgMuonRadiationAlgo;
@@ -682,14 +683,14 @@ std::auto_ptr<HepMC::GenEvent> ParticleReplacerZtautau::produce(const std::vecto
     sumMuonP4_replaced += muon->p4();
   }
   reco::Candidate::LorentzVector sumMuonP4_embedded(0.,0.,0.,0.);
-  if ( genEvt ) {
+  // if ( genEvt ) {
     for ( HepMC::GenEvent::particle_iterator genParticle = passedEvt_output->particles_begin();
 	  genParticle != passedEvt_output->particles_end(); ++genParticle ) {
       if ( (*genParticle)->status() != 1 ) continue;
-      if ( abs((*genParticle)->pdg_id()) == 12 || abs((*genParticle)->pdg_id()) == 14 || abs((*genParticle)->pdg_id()) == 16 ) continue;
+      // if ( abs((*genParticle)->pdg_id()) == 12 || abs((*genParticle)->pdg_id()) == 14 || abs((*genParticle)->pdg_id()) == 16 ) continue;
       sumMuonP4_embedded += reco::Candidate::LorentzVector((*genParticle)->momentum().px(), (*genParticle)->momentum().py(), (*genParticle)->momentum().pz(), (*genParticle)->momentum().e());
     }
-  }
+  // }
   if ( fabs(sumMuonP4_embedded.pt() - sumMuonP4_replaced.pt()) > (1.e-3*sumMuonP4_replaced.pt()) ) {
     edm::LogWarning ("<MCEmbeddingValidationAnalyzer::analyze>")
       << "Transverse momentum of embedded tau leptons = " << sumMuonP4_embedded.pt() 
@@ -711,7 +712,7 @@ std::auto_ptr<HepMC::GenEvent> ParticleReplacerZtautau::produce(const std::vecto
   return passedEvt_output_ptr;
 }
 
-void ParticleReplacerZtautau::beginRun(edm::Run& run, const edm::EventSetup& es)
+void ParticleReplacerZtautau::beginRun(edm::Run const& run, edm::EventSetup const& es)
 {
   if ( !tauola_isInitialized_ ) {
     std::cout << "<ParticleReplacerZtautau::beginRun>: Initializing TAUOLA interface." << std::endl;

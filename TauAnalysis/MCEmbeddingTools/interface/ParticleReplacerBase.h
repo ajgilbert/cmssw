@@ -33,7 +33,7 @@ class ParticleReplacerBase
   virtual void declareExtraProducts(MCParticleReplacer*) {}
 
   virtual void beginJob() {}
-  virtual void beginRun(edm::Run& run, const edm::EventSetup& es) {}
+  virtual void beginRun(edm::Run const& run, edm::EventSetup const& es) {}
   virtual void endRun() {}
   virtual void endJob() {}
 
