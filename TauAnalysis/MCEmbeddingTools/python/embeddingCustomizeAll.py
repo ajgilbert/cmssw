@@ -313,7 +313,33 @@ def customise(process):
   #     causing exception in 'pfNoPileUp' module otherwise
   outputModule.outputCommands.extend(['keep recoTracks_generalTracksORG_*_*'])
   #----------------------------------------------------------------------------------------------------------------------
-  
+
+
+  #----------------------------------------------------------------------------------------------------------------------
+  # AG: In 7_X_Y the PFBlockAlgo will try to match the supercluster seeds of GsfTracks to the new PFClusters collection
+  # Because the GsfTracks are mixed from the original and embedded event these superclusters come from different collections
+  # and the matching by edm::Ref does not work. Switching it off makes it fall back to matching by DetID, which hopefully is
+  # fine.
+  process.particleFlowBlock.SuperClusterMatchByRef = cms.bool(False)
+
+  # AG: In 7_X_Y we can end up with charged PF candidates having a trackRef() into the embedded event track collection instead
+  # of the merged one. This seems to happen when conversion tracks are used the source of the PF candidate. Here we update
+  # the track refs to the correction collection
+  process.gsfGeneralInOutOutInConversionTrackMergerORG = process.gsfGeneralInOutOutInConversionTrackMerger.clone()
+
+  process.gsfGeneralInOutOutInConversionTrackMerger = cms.EDProducer("ConversionTrackRefUpdater",
+    input = cms.InputTag("gsfGeneralInOutOutInConversionTrackMergerORG"),
+    #input = cms.InputTag("generalInOutOutInConversionTrackMerger"),
+    targetTracks = cms.InputTag("generalTracks"),
+    srcTracks = cms.InputTag("generalTracksORG")
+  )
+  for p in process.paths:
+    pth = getattr(process,p)
+    if "gsfGeneralInOutOutInConversionTrackMerger" in pth.moduleNames():
+        pth.replace(process.gsfGeneralInOutOutInConversionTrackMerger, process.gsfGeneralInOutOutInConversionTrackMergerORG*process.gsfGeneralInOutOutInConversionTrackMerger)
+  #----------------------------------------------------------------------------------------------------------------------
+
+
   #----------------------------------------------------------------------------------------------------------------------
   # mix collections of GSF electron tracks
   process.electronGsfTracksORG = process.electronGsfTracks.clone()

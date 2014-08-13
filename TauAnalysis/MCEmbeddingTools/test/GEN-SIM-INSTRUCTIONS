@@ -1,0 +1,54 @@
+# STEP1: mixing with pileup...
+cmsDriver.py step1 \
+  --filein dbs:/DYJetsToLL_M-50_13TeV-madgraph-pythia8-tauola_v2/Fall13-POSTLS162_V1-v2/GEN-SIM \
+  --fileout file:step1.root --python_filename step1_cfg.py \
+  --pileup AVE_20_BX_25ns --pileup_input dbs:/MinBias_TuneA2MB_13TeV-pythia8/Fall13-POSTLS162_V1-v1/GEN-SIM \
+  --mc --eventcontent RAWSIM --datatier GEN-SIM-RAW \
+  --conditions POSTLS170_V5::All --magField 38T_PostLS1 --geometry DBExtendedPostLS1 \
+  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring \
+  --step DIGI,L1,DIGI2RAW,HLT:2013,RAW2DIGI,L1Reco \
+  --no_exec -n 1000
+
+# .. or without pileup 
+cmsDriver.py step1 \
+  --filein dbs:/DYJetsToLL_M-50_13TeV-madgraph-pythia8-tauola_v2/Fall13-POSTLS162_V1-v2/GEN-SIM \
+  --fileout file:step1.root --python_filename step1_cfg.py \
+  --mc --eventcontent RAWSIM --datatier GEN-SIM-RAW \
+  --conditions POSTLS170_V5::All --magField 38T_PostLS1 --geometry DBExtendedPostLS1 \
+  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring \
+  --step DIGI,L1,DIGI2RAW,HLT:2013,RAW2DIGI,L1Reco \
+  --no_exec -n 1000
+
+# STEP 2: reco
+cmsDriver.py step2 \
+  --filein file:step1.root \
+  --fileout file:step2.root --python_filename step2_cfg.py \
+  --mc --eventcontent RECOSIM --datatier RECOSIM \
+  --conditions POSTLS170_V5::All --magField 38T_PostLS1 --geometry DBExtendedPostLS1 \
+  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring \
+  --step RAW2DIGI,L1Reco,RECO \
+  --no_exec -n 1000
+
+# STEP 3: skimming
+# Allow 1 second per event (note, only expect ~8% of input events to pass this stage)
+cmsDriver.py TauAnalysis/MCEmbeddingTools/python/ZmumuStandaloneSelection_cff \
+  --filein=file:step2.root \
+  --fileout=skimmed.root --python_filename=skim.py \
+  --eventcontent=RECOSIM \
+  --conditions POSTLS170_V5::All --magField 38T_PostLS1 --geometry DBExtendedPostLS1 \
+  --customise TauAnalysis/MCEmbeddingTools/ZmumuStandaloneSelectionAll \
+  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring \
+  --step NONE \
+  --no_exec -n 1000
+
+# STEP 4: embedding
+# Warning: must change inputProcessSIM to "SIM" in TauAnalysis/MCEmbeddingTools/python/setDefaults.py 
+# Warning: must switch the order of the customise statements in embed.py. The embeddingCustomizeAll customise must be run after the others!
+cmsDriver.py TauAnalysis/MCEmbeddingTools/python/PFEmbeddingSource_cff \
+  --filein=file:skimmed.root \
+  --fileout=embedded.root --python_filename=embed.py \
+  --conditions POSTLS170_V5::All --magField 38T_PostLS1 --geometry DBExtendedPostLS1 \
+  --customise TauAnalysis/MCEmbeddingTools/embeddingCustomizeAll \
+  --customise SLHCUpgradeSimulations/Configuration/postLS1Customs.customisePostLS1,Configuration/DataProcessing/Utils.addMonitoring \
+  --step GEN,SIM,DIGI,L1,DIGI2RAW,HLT:2013,RAW2DIGI,L1Reco,RECO,EI \
+  --no_exec -n 1000
