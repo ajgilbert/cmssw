@@ -8,7 +8,7 @@ def setDefaults(process):
   # Define configuration parameter default values
   if not hasattr(process, "customization_options"):
     process.customization_options = cms.PSet(
-      parseCommandLine             = cms.bool(False),    # enable reading of configuration parameter values by parsing command-line
+      parseCommandLine             = cms.bool(True),    # enable reading of configuration parameter values by parsing command-line
       isMC                         = cms.bool(True),     # set to true for MC/false for data
       ZmumuCollection              = cms.InputTag('goldenZmumuCandidatesGe2IsoMuons'), # collection of selected Z->mumu candidates
       inputProcessRECO             = cms.string("RECO"), # instanceLabel to be used for retrieving collections of reconstructed objects reconstructed in original Z->mumu event
