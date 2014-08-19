@@ -336,7 +336,7 @@ ElectronAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
        fabs(etamc) < 2.5 ){
  
       
-      for (uint j=0; j<theEGamma.size();j++) {
+      for (unsigned int j=0; j<theEGamma.size();j++) {
 	float etareco = theEGamma[j].eta();
 	float phireco = theEGamma[j].phi();
 	float deta = etamc - etareco;
