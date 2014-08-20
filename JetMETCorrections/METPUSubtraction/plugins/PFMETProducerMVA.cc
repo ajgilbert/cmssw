@@ -223,7 +223,7 @@ std::vector<mvaMEtUtilities::JetInfo> PFMETProducerMVA::computeJetInfo(const rec
 								       const JetCorrector &iCorrector,edm::Event &iEvent,const edm::EventSetup &iSetup,
 								       std::vector<mvaMEtUtilities::leptonInfo> &iLeptons,std::vector<mvaMEtUtilities::pfCandInfo> &iCands)
 {
-  const L1FastjetCorrector* lCorrector = dynamic_cast<const L1FastjetCorrector*>(&iCorrector);
+  // const L1FastjetCorrector* lCorrector = dynamic_cast<const L1FastjetCorrector*>(&iCorrector);
   std::vector<mvaMEtUtilities::JetInfo> retVal;
   for ( reco::PFJetCollection::const_iterator uncorrJet = uncorrJets.begin();
 	uncorrJet != uncorrJets.end(); ++uncorrJet ) {
