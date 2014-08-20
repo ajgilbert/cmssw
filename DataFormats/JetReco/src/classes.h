@@ -39,6 +39,7 @@
 #include "DataFormats/JetReco/interface/FFTBasicJetCollection.h"
 #include "DataFormats/JetReco/interface/FFTJetPileupSummary.h"
 #include "DataFormats/JetReco/interface/DiscretizedEnergyFlow.h"
+#include "DataFormats/JetReco/interface/PileupJetIdentifier.h"
 
 #include "DataFormats/Common/interface/Wrapper.h"
 #include "DataFormats/Common/interface/FwdRef.h" 
@@ -47,6 +48,10 @@
 #include "DataFormats/Common/interface/RefHolder.h"
 #include "DataFormats/Common/interface/Holder.h"
 #include "DataFormats/Common/interface/Association.h"
+#include "DataFormats/Common/interface/AssociationMap.h"
+
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidate.h"
+#include "DataFormats/ParticleFlowCandidate/interface/PFCandidateFwd.h"
 
 #include "DataFormats/Common/interface/PtrVector.h"
 #include "DataFormats/Common/interface/Ptr.h"
@@ -133,7 +138,6 @@ namespace {
     std::vector<edm::Ref<std::vector<reco::PFJet> > > vrvr5;
     std::vector<reco::PFJetRefVector> vrv5;
     edm::Wrapper<std::vector<reco::PFJetRefVector> > wfvrv5;
-    edm::reftobase::RefVectorHolder<reco::PFJetRefVector> rrpfr5;
 
     reco::TrackJetCollection o6;
     reco::TrackJetRef r6;
@@ -174,6 +178,10 @@ namespace {
     edm::reftobase::Holder<reco::Candidate, reco::PFClusterJetRef> rtb8;
     reco::JetTrackMatch<reco::PFClusterJetCollection> jtm8;
 
+    StoredPileupJetIdentifier spujetid;
+    std::vector<StoredPileupJetIdentifier> spujetidvec;
+    edm::ValueMap<StoredPileupJetIdentifier> spujetidvmap;
+    edm::Wrapper<edm::ValueMap<StoredPileupJetIdentifier> > spujetidvmapw;
 
     edm::reftobase::Holder<reco::Candidate,edm::RefToBase<reco::Jet> >  rtbb6;
 
@@ -223,7 +231,6 @@ namespace {
     // RefToBase Holders for Jets
     edm::RefToBase<reco::Jet>  rtbj;
     edm::reftobase::IndirectHolder<reco::Jet> ihj;
-    edm::reftobase::IndirectVectorHolder<reco::Jet> ihvj;
     edm::reftobase::Holder<reco::Jet, reco::CaloJetRef> hcj;
     edm::reftobase::Holder<reco::Jet, reco::JPTJetRef> hjptj;
     edm::reftobase::Holder<reco::Jet, reco::GenJetRef> hgj;
@@ -453,6 +460,13 @@ namespace {
     // Pile-up summary
     reco::FFTJetPileupSummary r_fft_psumary;
     edm::Wrapper<reco::FFTJetPileupSummary> wr_r_fft_psumary;
+
+    // jet -> PFCandidate associations, needed for boosted tau reconstruction
+    edm::AssociationMap<edm::OneToMany<std::vector<reco::PFJet>,std::vector<reco::PFCandidate>,unsigned int> > jetPFCandidateAssociation_o;
+    edm::Wrapper<edm::AssociationMap<edm::OneToMany<std::vector<reco::PFJet>,std::vector<reco::PFCandidate>,unsigned int> > > jetPFCandidateAssociation_w;
+    edm::helpers::KeyVal<edm::RefProd<std::vector<reco::PFJet> >,edm::RefProd<std::vector<reco::PFCandidate> > > jetPFCandidateAssociation_kv;
+    edm::helpers::KeyVal<edm::Ref<std::vector<reco::PFJet>,reco::PFJet,edm::refhelper::FindUsingAdvance<std::vector<reco::PFJet>,reco::PFJet> >,edm::RefVector<std::vector<reco::PFCandidate>,reco::PFCandidate,edm::refhelper::FindUsingAdvance<std::vector<reco::PFCandidate>,reco::PFCandidate> > > jetPFCandidateAssociation_kv2;
+    std::map<unsigned int,edm::helpers::KeyVal<edm::Ref<std::vector<reco::PFJet>,reco::PFJet,edm::refhelper::FindUsingAdvance<std::vector<reco::PFJet>,reco::PFJet> >,edm::RefVector<std::vector<reco::PFCandidate>,reco::PFCandidate,edm::refhelper::FindUsingAdvance<std::vector<reco::PFCandidate>,reco::PFCandidate> > > > jetPFCandidateAssociation_mkv;
   };
 }
 #endif
