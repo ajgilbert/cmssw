@@ -1,0 +1,3 @@
+[submodule "ICAnalysis/ElectronConversionCalculator"]
+	path = ICAnalysis/ElectronConversionCalculator
+	url = git@github.com:ajgilbert/ICAnalysis-ElectronConversionCalculator.git
