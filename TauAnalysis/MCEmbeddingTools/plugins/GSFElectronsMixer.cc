@@ -35,6 +35,7 @@
 #include "DataFormats/EgammaCandidates/interface/GsfElectronFwd.h"
 #include "DataFormats/EgammaCandidates/interface/GsfElectron.h"
 
+#include "DataFormats/Common/interface/ValueMap.h"
 //
 // class decleration
 //
@@ -50,6 +51,7 @@ class GSFElectronsMixer : public edm::EDProducer {
       virtual void endJob() ;
       edm::InputTag _electrons1;
       edm::InputTag _electrons2;
+      edm::InputTag _egmPfValMap;
 
       // ----------member data ---------------------------
 };
@@ -68,10 +70,12 @@ class GSFElectronsMixer : public edm::EDProducer {
 //
 GSFElectronsMixer::GSFElectronsMixer(const edm::ParameterSet& iConfig) :
   _electrons1(iConfig.getParameter< edm::InputTag > ("col1")),
-  _electrons2(iConfig.getParameter< edm::InputTag > ("col2"))
+  _electrons2(iConfig.getParameter< edm::InputTag > ("col2")),
+  _egmPfValMap(iConfig.getParameter< edm::InputTag > ("egmPfValMap"))
 {
 
    produces<reco::GsfElectronCollection>();
+   produces<edm::ValueMap<reco::GsfElectronRef> >();
 }
 
 
@@ -106,6 +110,13 @@ GSFElectronsMixer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    std::auto_ptr<reco::GsfElectronCollection> finalCollection( new reco::GsfElectronCollection ) ;
 
+   edm::Handle<edm::ValueMap<reco::GsfElectronRef> > valMap;
+   iEvent.getByLabel(_egmPfValMap, valMap);
+   // AG: just copy the ValueMap at the moment
+   // It would be better to create a new one that points to the electrons
+   // in this new merged collection we are about to create
+   std::auto_ptr<edm::ValueMap<reco::GsfElectronRef> > valMap_new(new edm::ValueMap<reco::GsfElectronRef>(*valMap));
+
    //std::cout << "##########################################\n";
    //int i  = 0;
    std::vector< edm::Handle< reco::GsfElectronCollection > >::iterator it = cols.begin();
@@ -127,6 +138,7 @@ GSFElectronsMixer::produce(edm::Event& iEvent, const edm::EventSetup& iSetup)
    }
 
    iEvent.put(finalCollection);
+   iEvent.put(valMap_new);
 
 }
 

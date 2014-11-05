@@ -191,17 +191,17 @@ void PFCandidateMixer::mix(edm::Event& iEvent, const edm::Handle<reco::TrackColl
        double minDR = 9999.;
        int iMinDr = -1;
        if (it->trackRef().isNonnull()) {
-         if (it->particleId() == 4) {
-          std::cout << "We seem to have found a photon with a trackRef\n";
-          std::cout << "The trackRef: " << it->trackRef().id() << "\n";
-          std::cout << "The gsfTrackRef: " << it->gsfTrackRef().id() << "\n";
-          std::cout << "The GsfElectronRef: " << it->gsfElectronRef().id() << "\n";
-          std::cout << "The conversionRef: " << it->conversionRef().id() << "\n";
-          std::cout << "The superClusterRef: " << it->superClusterRef().id() << "\n";
-          std::cout << "The photonRef: " << it->photonRef().id() << "\n";
-          std::cout << "The v0Ref: " << it->v0Ref().id() << "\n";
-          std::cout << *it << "\n";
-         }
+         // if (it->particleId() == 4) {
+         //  std::cout << "We seem to have found a photon with a trackRef\n";
+         //  std::cout << "The trackRef: " << it->trackRef().id() << "\n";
+         //  std::cout << "The gsfTrackRef: " << it->gsfTrackRef().id() << "\n";
+         //  std::cout << "The GsfElectronRef: " << it->gsfElectronRef().id() << "\n";
+         //  std::cout << "The conversionRef: " << it->conversionRef().id() << "\n";
+         //  std::cout << "The superClusterRef: " << it->superClusterRef().id() << "\n";
+         //  std::cout << "The photonRef: " << it->photonRef().id() << "\n";
+         //  std::cout << "The v0Ref: " << it->v0Ref().id() << "\n";
+         //  std::cout << *it << "\n";
+         // }
          for ( i = 0 ; i < trackCol->size(); ++i){
            if ( reco::deltaR( *(it->trackRef()), (*trackCol)[i] )<0.001 ) {
                 found = true;
@@ -214,9 +214,13 @@ void PFCandidateMixer::mix(edm::Event& iEvent, const edm::Handle<reco::TrackColl
            } 
          } 
        } 
-       if ( found && it->particleId() != reco::PFCandidate::gamma){ // ref was found, overwrite in PFCand
+       if ( found /*&& it->particleId() != reco::PFCandidate::gamma*/){ // ref was found, overwrite in PFCand
          reco::TrackRef trref(trackCol,i);
+         // PFCandidate won't let us set a TrackRef if the charge is zero,
+         // so we'll set it to -1, set the TrackRef, then set it back to zero again
+         if (it->particleId() == reco::PFCandidate::gamma) cand.setCharge(1);
          cand.setTrackRef(trref);
+         if (it->particleId() == reco::PFCandidate::gamma) cand.setCharge(0);
          //std::cout << " YY track ok"<<std::endl;
 
        } else { // keep orginall ref
