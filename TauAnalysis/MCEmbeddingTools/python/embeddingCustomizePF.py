@@ -17,7 +17,6 @@ def customise(process, inputProcess):
       col1 = cms.untracked.InputTag("cleanedParticleFlow"),
       col2 = cms.untracked.InputTag("particleFlowTmp", ""),
       trackCol = cms.untracked.InputTag("generalTracks"),
-
       # Don't produce value maps:
       muons = cms.untracked.InputTag(""),
       gsfElectrons = cms.untracked.InputTag("")
@@ -63,16 +62,4 @@ def customise(process, inputProcess):
     # TODO: photons ???
   )
 
-
-  """ 
-  process.gedGsfElectronsTmpORG = process.gedGsfElectronsTmp.clone()
-  process.gedGsfElectronsTmp = cms.EDProducer("GSFElectronsMixer",
-      col1 = cms.InputTag("gedGsfElectronsTmpORG"),
-      col2 = cms.InputTag("gedGsfElectronsTmp", "", inputProcess)
-  )
-  for p in process.paths:
-    pth = getattr(process,p)
-    if "gedGsfElectronsTmp" in pth.moduleNames():
-      pth.replace(process.gedGsfElectronsTmp, process.gedGsfElectronsTmpORG*process.gedGsfElectronsTmp)
-  """
   return process

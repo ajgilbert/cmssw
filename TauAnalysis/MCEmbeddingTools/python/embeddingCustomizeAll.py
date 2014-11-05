@@ -358,15 +358,16 @@ def customise(process):
   process.generalConversionTrackProducer.TrackProducer = cms.string('generalTracksORG')
   process.uncleanedOnlyGeneralConversionTrackProducer.TrackProducer = cms.string('generalTracksORG')
 
-  process.gsfElectronsORG = process.gsfElectrons.clone()
-  process.gsfElectrons = cms.EDProducer("GSFElectronsMixer",
-      col1 = cms.InputTag("gsfElectronsORG"),
-      col2 = cms.InputTag("gsfElectrons", "", inputProcess)
+  process.gedGsfElectronsTmpORG = process.gedGsfElectronsTmp.clone()
+  process.gedGsfElectronsTmp = cms.EDProducer("GSFElectronsMixer",
+      col1 = cms.InputTag("gedGsfElectronsTmpORG"),
+      col2 = cms.InputTag("gedGsfElectrons", "", inputProcess),
+      egmPfValMap = cms.InputTag("gedGsfElectronsTmpORG")
   )
   for p in process.paths:
     pth = getattr(process,p)
-    if "gsfElectrons" in pth.moduleNames():
-      pth.replace(process.gsfElectrons, process.gsfElectronsORG*process.gsfElectrons)
+    if "gedGsfElectronsTmp" in pth.moduleNames():
+      pth.replace(process.gedGsfElectronsTmp, process.gedGsfElectronsTmpORG*process.gedGsfElectronsTmp)
   #----------------------------------------------------------------------------------------------------------------------
   
   # dE/dx information for mixed track collections not yet implemented in 'TracksMixer' module,
