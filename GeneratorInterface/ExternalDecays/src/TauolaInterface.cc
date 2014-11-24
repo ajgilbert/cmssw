@@ -545,18 +545,14 @@ HepMC::GenEvent* TauolaInterface::decay( HepMC::GenEvent* evt )
        int length=1;
        ranmar_(&prob,&length);
        double ct = -lifetime * std::log(prob);
-       double VxDec = GenVtx->position().x();
+       double VxDec = ProdVtx->position().x();
        VxDec += ct * (PMom.px()/mass);
-       VxDec += ProdVtx->position().x();
-       double VyDec = GenVtx->position().y();
+       double VyDec = ProdVtx->position().y();
        VyDec += ct * (PMom.py()/mass);
-       VyDec += ProdVtx->position().y();
-       double VzDec = GenVtx->position().z();
+       double VzDec = ProdVtx->position().z();
        VzDec += ct * (PMom.pz()/mass);
-       VzDec += ProdVtx->position().z();
-       double VtDec = GenVtx->position().t();
+       double VtDec = ProdVtx->position().t();
        VtDec += ct * (PMom.e()/mass);
-       VtDec += ProdVtx->position().t();
        GenVtx->set_position( HepMC::FourVector(VxDec,VyDec,VzDec,VtDec) ); 
        //
        // now find decay products with funky barcode, weed out and replace with clones of sensible barcode
