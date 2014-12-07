@@ -22,6 +22,15 @@ from RecoTauTag.RecoTau.RecoTauDiscriminantCutMultiplexer_cfi import *
 # Load helper functions to change the source of the discriminants
 from RecoTauTag.RecoTau.TauDiscriminatorTools import *
 
+# Load PFjet input parameters
+from RecoTauTag.RecoTau.PFRecoTauPFJetInputs_cfi import PFRecoTauPFJetInputs
+
+# deltaBeta correction factor calculated for taus from ak5PFJets (Run I) Note the cone size!
+ak5dBetaCorrection=0.0772/0.1687 
+dBetaCorrection=ak5dBetaCorrection
+
+
+
 # Select those taus that pass the HPS selections
 #  - pt > 15, mass cuts, tauCone cut
 from RecoTauTag.RecoTau.PFRecoTauDiscriminationByHPSSelection_cfi import hpsSelectionDiscriminator, decayMode_1Prong0Pi0, decayMode_1Prong1Pi0, decayMode_1Prong2Pi0, decayMode_3Prong0Pi0
@@ -141,7 +150,7 @@ hpsPFTauDiscriminationByIsolationSeqDBSumPtCorr = cms.Sequence(
 hpsPFTauDiscriminationByVLooseCombinedIsolationDBSumPtCorr = hpsPFTauDiscriminationByVLooseIsolationDBSumPtCorr.clone(
     ApplyDiscriminationByTrackerIsolation = True,
     ApplyDiscriminationByECALIsolation = True,
-    deltaBetaFactor = "%0.4f"%((0.09/0.25)*(0.0772/0.1687)),
+    deltaBetaFactor = "%0.4f"%(dBetaCorrection),
     applyOccupancyCut = False,
     applySumPtCut = True,
     maximumSumPtCut = 3.0,
@@ -153,7 +162,7 @@ hpsPFTauDiscriminationByVLooseCombinedIsolationDBSumPtCorr.qualityCuts.isolation
 hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr = hpsPFTauDiscriminationByLooseIsolationDBSumPtCorr.clone(
     ApplyDiscriminationByTrackerIsolation = True,
     ApplyDiscriminationByECALIsolation = True,
-    deltaBetaFactor = "%0.4f"%(0.0772/0.1687),
+    deltaBetaFactor = "%0.4f"%(dBetaCorrection),
     applyOccupancyCut = False,
     applySumPtCut = True,
     maximumSumPtCut = 2.0,
@@ -182,7 +191,7 @@ hpsPFTauDiscriminationByRawGammaIsolationDBSumPtCorr = hpsPFTauDiscriminationByL
 hpsPFTauDiscriminationByMediumCombinedIsolationDBSumPtCorr = hpsPFTauDiscriminationByMediumIsolationDBSumPtCorr.clone(
     ApplyDiscriminationByTrackerIsolation = True,
     ApplyDiscriminationByECALIsolation = True,
-    deltaBetaFactor = "%0.4f"%(0.0772/0.1687),
+    deltaBetaFactor = "%0.4f"%(dBetaCorrection),
     applyOccupancyCut = False,
     applySumPtCut = True,
     maximumSumPtCut = 1.0,
@@ -194,7 +203,7 @@ hpsPFTauDiscriminationByMediumCombinedIsolationDBSumPtCorr.qualityCuts.isolation
 hpsPFTauDiscriminationByTightCombinedIsolationDBSumPtCorr = hpsPFTauDiscriminationByTightIsolationDBSumPtCorr.clone(
     ApplyDiscriminationByTrackerIsolation = True,
     ApplyDiscriminationByECALIsolation = True,
-    deltaBetaFactor = "%0.4f"%(0.0772/0.1687),
+    deltaBetaFactor = "%0.4f"%(dBetaCorrection),
     applyOccupancyCut = False,
     applySumPtCut = True,
     maximumSumPtCut = 0.8,
@@ -516,11 +525,34 @@ hpsPFTauDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits = hpsPFTauDiscrimin
     storeRawSumPt = cms.bool(True)
 )
 
+hpsPFTauDiscriminationByLooseCombinedIsolationRhoSumPtCorr3Hits = hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr3Hits.clone(
+    applyDeltaBetaCorrection = cms.bool(False),
+    applyRhoCorrection = cms.bool(True)
+)
+hpsPFTauDiscriminationByMediumCombinedIsolationRhoSumPtCorr3Hits = hpsPFTauDiscriminationByMediumCombinedIsolationDBSumPtCorr3Hits.clone(
+    applyDeltaBetaCorrection = cms.bool(False),
+    applyRhoCorrection = cms.bool(True)
+)
+hpsPFTauDiscriminationByTightCombinedIsolationRhoSumPtCorr3Hits = hpsPFTauDiscriminationByTightCombinedIsolationDBSumPtCorr3Hits.clone(
+    applyDeltaBetaCorrection = cms.bool(False),
+    applyRhoCorrection = cms.bool(True)
+)
+
+hpsPFTauDiscriminationByRawCombinedIsolationRhoSumPtCorr3Hits = hpsPFTauDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits.clone(
+    applyDeltaBetaCorrection = cms.bool(False),
+    applyRhoCorrection = cms.bool(True)
+)
+
+
 hpsPFTauDiscriminationByCombinedIsolationSeqDBSumPtCorr3Hits = cms.Sequence(
     hpsPFTauDiscriminationByLooseCombinedIsolationDBSumPtCorr3Hits*
     hpsPFTauDiscriminationByMediumCombinedIsolationDBSumPtCorr3Hits*
     hpsPFTauDiscriminationByTightCombinedIsolationDBSumPtCorr3Hits*
-    hpsPFTauDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits
+    hpsPFTauDiscriminationByRawCombinedIsolationDBSumPtCorr3Hits*
+    hpsPFTauDiscriminationByLooseCombinedIsolationRhoSumPtCorr3Hits*
+    hpsPFTauDiscriminationByMediumCombinedIsolationRhoSumPtCorr3Hits*
+    hpsPFTauDiscriminationByTightCombinedIsolationRhoSumPtCorr3Hits*
+    hpsPFTauDiscriminationByRawCombinedIsolationRhoSumPtCorr3Hits
 )
 
 # Define the HPS selection discriminator used in cleaning
@@ -587,7 +619,7 @@ hpsPFTauMVA3IsolationChargedIsoPtSum = hpsPFTauDiscriminationByLooseCombinedIsol
     applyDeltaBetaCorrection = cms.bool(False),
     storeRawSumPt = cms.bool(True),
     storeRawPUsumPt = cms.bool(False),
-    customOuterCone = cms.double(0.5),
+    customOuterCone = PFRecoTauPFJetInputs.isolationConeSize,
     isoConeSizeForDeltaBeta = cms.double(0.8),
     verbosity = cms.int32(0)
 )

@@ -39,7 +39,6 @@
 
 #include "TrackingTools/TrackAssociator/interface/TrackDetectorAssociator.h"
 
-
 #include "Math/VectorUtil.h"
 
 class TCTauAlgorithm {
