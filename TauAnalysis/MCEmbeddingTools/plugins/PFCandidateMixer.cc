@@ -246,7 +246,13 @@ void PFCandidateMixer::mix(edm::Event& iEvent, const edm::Handle<reco::TrackColl
            std::cout << " trackref in PFCand came from: "   << tag.encode() << std::endl;
          }
        }
-       pOut->push_back(cand);
+       // AG: Only merge this PF candidate if the track was found
+       // successfully. If we didn't find it this probably means it was
+       // removed in the muon cleaning step. Keeping the PF candidate in this
+       // case will cause errors later in the jet-track association.
+       if (it->trackRef().isNull() || found) {
+          pOut->push_back(cand);
+       }
      }
      ++iCol;
    }
