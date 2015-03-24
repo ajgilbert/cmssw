@@ -268,32 +268,58 @@ def customise(process):
   if process.customization_options.embeddingMode.value() == "RH" and process.customization_options.cleaningMode == 'PF':
     rerunParticleFlow(process, inputProcess)
     process.ProductionFilterSequence += process.rerunParticleFlowSequenceForPFMuonCleaning
-  #----------------------------------------------------------------------------------------------------------------------  
+  #----------------------------------------------------------------------------------------------------------------------
+  embeddingMode = process.customization_options.embeddingMode.value()
 
-  # mix "general" Track collection
-  process.generalTracksORG = process.generalTracks.clone()
-  process.generalTracks = cms.EDProducer("TrackMixer",
-    todo = cms.VPSet(
-      cms.PSet(                                     
-        collection1 = cms.InputTag("generalTracksORG", "", "EmbeddedRECO"),
-        collection2 = cms.InputTag("cleanedGeneralTracks")
+  if embeddingMode == "RH":
+      process.generalTracksORG = process.generalTracks.clone()
+      process.generalTracks = cms.EDProducer("TrackMixer",
+        todo = cms.VPSet(
+          cms.PSet(
+            collection1 = cms.InputTag("generalTracksORG", "", "EmbeddedRECO"),
+            collection2 = cms.InputTag("cleanedGeneralTracks")
+          )
+        ),
+        verbosity = cms.int32(0)
       )
-    ),
-    verbosity = cms.int32(0)                                         
-  )
-     
-  for p in process.paths:
-    pth = getattr(process,p)
-    if "generalTracks" in pth.moduleNames():
-      pth.replace(process.generalTracks, process.generalTracksORG*process.generalTracks)
-
+      for p in process.paths:
+        pth = getattr(process,p)
+        if "generalTracks" in pth.moduleNames():
+          pth.replace(process.generalTracks, process.generalTracksORG*process.generalTracks)
+  elif embeddingMode == "PF":
+      # mix "general" Track collection
+      process.tmfTracks = cms.EDProducer("TrackMixer",
+        todo = cms.VPSet(
+          cms.PSet(
+            collection1 = cms.InputTag("generalTracks", "", "EmbeddedRECO"),
+            collection2 = cms.InputTag("cleanedGeneralTracks")
+          )
+        ),
+        verbosity = cms.int32(0)
+      )
+      # update Vertex reco to use merged collection
+      process.offlinePrimaryVerticesWithBS.TrackLabel = cms.InputTag("tmfTracks")
+      process.offlinePrimaryVertices.TrackLabel = cms.InputTag("tmfTracks")
+      # Update muon reco to use merged collection
+      if hasattr(process.muons, "TrackExtractorPSet"):
+        process.muons.TrackExtractorPSet.inputTrackCollection = cms.InputTag("tmfTracks")
+      elif hasattr(process, "muons1stStep") and hasattr(process.muons1stStep, "TrackExtractorPSet"):
+        process.muons1stStep.TrackExtractorPSet.inputTrackCollection = cms.InputTag("tmfTracks")
+      else:
+        raise "Problem with muons"
+      # run tmfTracks after generalTracks
+      for p in process.paths:
+        pth = getattr(process,p)
+        if "generalTracks" in pth.moduleNames():
+          pth.replace(process.generalTracks, process.generalTracks*process.tmfTracks)
   #----------------------------------------------------------------------------------------------------------------------
   # CV/TF: mixing of std::vector<Trajectory> from Zmumu event and embedded tau decay products does not work yet.
   #        For the time-being, we need to use the Trajectory objects from the embedded event
   process.trackerDrivenElectronSeedsORG = process.trackerDrivenElectronSeeds.clone()
-  process.trackerDrivenElectronSeedsORG.TkColList = cms.VInputTag(
-    cms.InputTag("generalTracksORG")
-  )
+  if embeddingMode == "RH":
+    process.trackerDrivenElectronSeedsORG.TkColList = cms.VInputTag(
+      cms.InputTag("generalTracksORG")
+    )
 
   process.trackerDrivenElectronSeeds = cms.EDProducer("ElectronSeedTrackRefUpdater",
     PreIdLabel = process.trackerDrivenElectronSeedsORG.PreIdLabel,
@@ -302,6 +328,8 @@ def customise(process):
     inSeeds = cms.InputTag("trackerDrivenElectronSeedsORG", process.trackerDrivenElectronSeedsORG.PreGsfLabel.value()),
     inPreId = cms.InputTag("trackerDrivenElectronSeedsORG", process.trackerDrivenElectronSeedsORG.PreIdLabel.value()),
   )
+  if embeddingMode == "PF":
+    process.trackerDrivenElectronSeeds.targetTracks = cms.InputTag("tmfTracks")
 
   for p in process.paths:
     pth = getattr(process,p)
@@ -333,6 +361,9 @@ def customise(process):
     targetTracks = cms.InputTag("generalTracks"),
     srcTracks = cms.InputTag("generalTracksORG")
   )
+  if embeddingMode == 'PF':
+    process.gsfGeneralInOutOutInConversionTrackMerger.targetTracks = cms.InputTag("tmfTracks")
+    process.gsfGeneralInOutOutInConversionTrackMerger.srcTracks = cms.InputTag("generalTracks")
   for p in process.paths:
     pth = getattr(process,p)
     if "gsfGeneralInOutOutInConversionTrackMerger" in pth.moduleNames():
@@ -355,8 +386,12 @@ def customise(process):
     if "electronGsfTracks" in pth.moduleNames():
         pth.replace(process.electronGsfTracks, process.electronGsfTracksORG*process.electronGsfTracks)
 
-  process.generalConversionTrackProducer.TrackProducer = cms.string('generalTracksORG')
-  process.uncleanedOnlyGeneralConversionTrackProducer.TrackProducer = cms.string('generalTracksORG')
+  if embeddingMode == 'RH':
+    process.generalConversionTrackProducer.TrackProducer = cms.string('generalTracksORG')
+    process.uncleanedOnlyGeneralConversionTrackProducer.TrackProducer = cms.string('generalTracksORG')
+  elif embeddingMode == 'PF':
+    process.generalConversionTrackProducer.TrackProducer = cms.string('generalTracks')
+    process.uncleanedOnlyGeneralConversionTrackProducer.TrackProducer = cms.string('generalTracks')
 
   process.gedGsfElectronsTmpORG = process.gedGsfElectronsTmp.clone()
   process.gedGsfElectronsTmp = cms.EDProducer("GSFElectronsMixer",
