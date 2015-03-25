@@ -173,6 +173,10 @@ def customise(process):
     'keep *_horeco_removedEnergyMuMinus*_*',
     'keep *_horeco_removedEnergyMuPlus*_*',
   ])
+
+  outputModule.outputCommands.extend([
+    'keep *_tmfTracks_*_*'
+  ])
   
   # replace HLT process name
   # (needed for certain reprocessed Monte Carlo samples)
