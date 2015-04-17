@@ -16,7 +16,7 @@ def customise(process, inputProcess):
     process.particleFlowTmpMixed = cms.EDProducer('PFCandidateMixer',
       col1 = cms.untracked.InputTag("cleanedParticleFlow"),
       col2 = cms.untracked.InputTag("particleFlowTmp", ""),
-      trackCol = cms.untracked.InputTag("generalTracks"),
+      trackCol = cms.untracked.InputTag("tmfTracks"),
       # Don't produce value maps:
       muons = cms.untracked.InputTag(""),
       gsfElectrons = cms.untracked.InputTag("")
@@ -56,7 +56,7 @@ def customise(process, inputProcess):
   process.particleFlow = cms.EDProducer('PFCandidateMixer',
     col1 = cms.untracked.InputTag("cleanedParticleFlow"),
     col2 = cms.untracked.InputTag("particleFlowORG", ""),
-    trackCol = cms.untracked.InputTag("generalTracks"),
+    trackCol = cms.untracked.InputTag("tmfTracks"),
     muons = cms.untracked.InputTag("muons"),
     gsfElectrons = cms.untracked.InputTag("gedGsfElectrons")
     # TODO: photons ???
