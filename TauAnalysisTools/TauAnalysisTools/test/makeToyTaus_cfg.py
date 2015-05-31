@@ -22,12 +22,27 @@ process.load('Configuration/StandardSequences/FrontierConditions_GlobalTag_cff')
 process.GlobalTag.globaltag = cms.string('PHYS14_25_V2::All')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(5000)
+    input = cms.untracked.int32(20000)
 )
 
+files = {
+  'Zprime' : [
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/00F63F8A-A397-E411-883F-00266CF23E68.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/1248589C-9297-E411-B5C2-848F69FD44B1.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/20AD3F39-9697-E411-AAE0-00266CF25F34.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/2C7B770A-9097-E411-9805-7845C4FC3785.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/3AA2EDF6-A297-E411-ABCD-00266CF9B828.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/4CD4493D-9497-E411-A216-00A0D1EEE5CC.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/6274822E-B497-E411-8A20-00A0D1EE2990.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/72A1EB0A-A597-E411-8FB3-008CFA00018C.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/7A4033EF-9F97-E411-90E1-00266CF25DC4.root',
+    '/store/mc/Phys14DR/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8/AODSIM/PU40bx25_PHYS14_25_V1-v2/00000/7EDE2C7E-9897-E411-ADC1-00266CF9B274.root'
+  ]
+}
+
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring(                                
-        'file:/Volumes/HDD/tuples/ZprimeToTauTau_M-1000_Tune4C_13TeV-pythia8-PU40bx25_PHYS14_25_V1-v2.root'                                
+    fileNames = cms.untracked.vstring(
+      files['Zprime']
     ),
 )
 
