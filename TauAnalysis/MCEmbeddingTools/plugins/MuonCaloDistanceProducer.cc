@@ -32,9 +32,8 @@ MuonCaloDistanceProducer::MuonCaloDistanceProducer(const edm::ParameterSet& cfg)
   produces<detIdToFloatMap>("depositsMuMinus");
   
   edm::ParameterSet cfgTrackAssociator = cfg.getParameter<edm::ParameterSet>("trackAssociator");
-  //edm::ConsumesCollector iC = consumesCollector();
-  //trackAssociatorParameters_.loadParameters(cfgTrackAssociator, iC);
-  trackAssociatorParameters_.loadParameters(cfgTrackAssociator);
+  edm::ConsumesCollector iC = consumesCollector();
+  trackAssociatorParameters_.loadParameters(cfgTrackAssociator, iC);
   trackAssociator_.useDefaultPropagator();
 }
 
