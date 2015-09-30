@@ -1838,7 +1838,9 @@ linkRefinableObjectECALToSingleLegConv(const pfEGHelpers::HeavyObjectCache* hoc,
       float mvaval = EvaluateSingleLegMVA(hoc,_currentblock, 
                                           *cfg_.primaryVtx, 
                                           kf->first->index());
-      if(mvaval > cfg_.mvaConvCut) {
+      const reco::TrackRef singleConversionTrack = kf->first->trackRef();
+      if (find(cfg_.singleLegConversion_listValidAlgorithms.begin(), cfg_.singleLegConversion_listValidAlgorithms.end(), singleConversionTrack->algo()) != cfg_.singleLegConversion_listValidAlgorithms.end() &&
+	  mvaval > cfg_.mvaConvCut) {
 	const reco::PFBlockElementTrack* elemaskf =
 	  docast(const reco::PFBlockElementTrack*,kf->first);
 	RO.secondaryKFs.push_back( std::make_pair(elemaskf,true) );

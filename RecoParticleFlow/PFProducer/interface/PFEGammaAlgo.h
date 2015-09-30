@@ -121,6 +121,7 @@ class PFEGammaAlgo {
     double coneTrackIsoForEgammaSC;
     std::string mvaweightfile ;
     double mvaConvCut;
+    std::vector<int> singleLegConversion_listValidAlgorithms;
     bool useReg;
     std::string X0_Map;
     const reco::Vertex* primaryVtx;

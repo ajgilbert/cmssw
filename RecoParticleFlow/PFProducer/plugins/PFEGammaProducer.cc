@@ -129,6 +129,8 @@ PFEGammaProducer::PFEGammaProducer(const edm::ParameterSet& iConfig,
   algo_config.mvaweightfile =
     iConfig.getParameter<edm::FileInPath>("pf_convID_mvaWeightFile").fullPath();
   algo_config.mvaConvCut = iConfig.getParameter<double>("pf_conv_mvaCut");  
+  algo_config.singleLegConversion_listValidAlgorithms = 
+    iConfig.getParameter< std::vector<int> >("pf_singleLegConversion_listValidAlgorithms");
   algo_config.sumPtTrackIsoForPhoton = 
     iConfig.getParameter<double>("sumPtTrackIsoForPhoton");
   algo_config.sumPtTrackIsoSlopeForPhoton = 
