@@ -42,7 +42,7 @@ particleFlowTmp = cms.EDProducer("PFProducer",
     sumPtTrackIsoForPhoton=cms.double(2.0),
     sumPtTrackIsoSlopeForPhoton=cms.double(0.001),
 
-    useEGammaFilters = cms.bool(True),
+    useEGammaFilters = cms.bool(False),
     useProtectionsForJetMET = cms.bool(True),    
     # New electron selection cuts for CMSSW_700
     electron_iso_pt = cms.double(10.0),
